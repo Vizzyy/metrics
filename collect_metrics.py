@@ -28,9 +28,14 @@ def record_metrics():
         metrics[f"disk_util_{drive}"] = util
 
     if TEMP:
-        cpu_temp = psutil.sensors_temperatures()["coretemp"][0][1]
-        # print(f"CPU temp: {cpu_temp}")
-        metrics["cpu_temp"] = cpu_temp
+        try:
+            # Should work on any non-Mac linux box
+            cpu_temp = psutil.sensors_temperatures()[list(psutil.sensors_temperatures())[0]][0][1]
+            # cpu_temp = gpiozero.CPUTemperature()  # Only works for RPi's
+            # print(f"CPU temp: {cpu_temp}")
+            metrics["cpu_temp"] = cpu_temp
+        except Exception as e:
+            print(e)
 
     persist_metrics(metrics)
 
