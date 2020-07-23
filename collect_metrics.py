@@ -25,7 +25,7 @@ def record_metrics():
         # print("Used: %d GiB" % (used // (2 ** 30)))
         # print("Free: %d GiB" % (free // (2 ** 30)))
         # print(f"{drive} utilization: {util}%")
-        metrics[f"disk_util_{drive}"] = util
+        metrics["disk_util_"+drive] = util
 
     if TEMP:
         try:
@@ -53,7 +53,7 @@ def persist_metrics(metrics):
             cursor.execute(sql)
         db.commit()
 
-        print(f"Inserted into DB: {metrics}")
+        print("Inserted into DB: "+metrics)
     except Exception as e:
         print(e)
 
