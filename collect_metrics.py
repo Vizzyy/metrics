@@ -27,6 +27,11 @@ def record_metrics():
         # print(f"{drive} utilization: {util}%")
         metrics[f"disk_util_{drive}"] = util
 
+    if TEMP:
+        cpu_temp = psutil.sensors_temperatures()["coretemp"][0][1]
+        # print(f"CPU temp: {cpu_temp}")
+        metrics["cpu_temp"] = cpu_temp
+
     persist_metrics(metrics)
 
 
