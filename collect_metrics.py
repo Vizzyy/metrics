@@ -43,7 +43,7 @@ def record_metrics():
 def persist_metrics(metrics):
     try:
         # print(metrics)
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now()
         metric_keys = metrics.keys()
         for metric in metric_keys:
             # print(f"{metric} - {metrics[metric]}")
