@@ -1,7 +1,9 @@
+import math
 import shutil
 import psutil
 from config import *
 import datetime
+import time
 
 
 def record_metrics():
@@ -36,6 +38,12 @@ def record_metrics():
             metrics["cpu_temp"] = cpu_temp
         except Exception as e:
             print(e)
+
+    seconds_uptime = time.time() - psutil.boot_time()
+    # print(seconds_uptime)
+    days_uptime = math.floor(seconds_uptime / (3600*24))
+    # print(days_uptime)
+    metrics["uptime"] = days_uptime
 
     persist_metrics(metrics)
 
