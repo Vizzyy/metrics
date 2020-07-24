@@ -1,5 +1,7 @@
 # Metrics
 
+![Grafana Screenshot](Grafana.png)
+
 * This repo is a simple metrics-collection script to collect CPU/Memory/Disk/Temp metrics and persist them in a MySQL DB to be displayed on a Grafana server. 
 
 * The script is triggered via cron every 1 or 5 (or whatever interval you want) minutes. 
