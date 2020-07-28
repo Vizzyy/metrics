@@ -87,4 +87,6 @@ if __name__ == "__main__":
         record_uptime()
     if args.persist:
         persist_metrics()
+    else:
+        print(f"Metrics: {metrics}")
 

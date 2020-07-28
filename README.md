@@ -27,12 +27,11 @@ cursor = db.cursor()
 
 HOSTNAME = "EXAMPLE_HOST"
 DISK_DRIVES = ['/', '/System/Volumes/Data']
-TEMP = False  # Temperature does not work on Mac
 ```
 
 ### Example Cron Expression:
 
 ```
-*/1 * * * * /usr/bin/python3 -u /home/barney/metrics/collect_metrics.py >> /home/barney/metrics/metrics.log
+*/1 * * * * /usr/bin/python3 -u /home/pi/metrics/collect_metrics.py --cpu_util --mem_util --disk_util --cpu_temp --uptime --persist >> /home/pi/metrics/metrics.log
 ```
 
