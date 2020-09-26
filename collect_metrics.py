@@ -26,7 +26,7 @@ def arguments():
 def record_cpu_util(ec2):
     global metrics
     if ec2:
-        cpu_util = get_ec2_cpu
+        cpu_util = get_ec2_cpu()
     else:
         cpu_util = psutil.cpu_percent()
     metrics["cpu_util"] = cpu_util
