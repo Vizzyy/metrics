@@ -5,7 +5,7 @@ import psutil
 from config import *
 import datetime
 import time
-from ec2metrics import get_ec2_cpu, get_ec2_mem
+from ec2_metrics import get_ec2_cpu, get_ec2_mem
 
 
 metrics = {}
