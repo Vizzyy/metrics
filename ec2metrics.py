@@ -1,13 +1,14 @@
 import boto3
 from datetime import datetime, timedelta
+
 from ec2_metadata import ec2_metadata
 
 
-def get_ec2_cpu():
+def get_ec2_metric(namespace, metricname):
     client = boto3.client('cloudwatch')
     response = client.get_metric_statistics(
-        Namespace='AWS/EC2',
-        MetricName='CPUUtilization',
+        Namespace=namespace,
+        MetricName=metricname,
         Dimensions=[
             {
                 'Name': 'InstanceId',
@@ -27,27 +28,10 @@ def get_ec2_cpu():
     return result
 
 
-def get_ec2_mem():
-    client = boto3.client('cloudwatch')
-    response = client.get_metric_statistics(
-        Namespace='System/Linux',
-        MetricName='MemoryUtilization',
-        Dimensions=[
-            {
-                'Name': 'InstanceId',
-                'Value': 'i-0be6e0def59a1f87b'
-            },
-        ],
-        StartTime=datetime.today() - timedelta(seconds=300),
-        EndTime=datetime.today(),
-        Period=300,
-        Statistics=[
-            'Average',
-        ],
-        Unit='Percent'
-    )
-    result = response["Datapoints"][0]["Average"]
-    # print(result)
-    return result
+def get_ec2_cpu():
+    return get_ec2_metric('AWS/EC2', 'CPUUtilization')
 
-get_ec2_mem()
+
+def get_ec2_mem():
+    return get_ec2_metric('System/Linux', 'MemoryUtilization')
+
