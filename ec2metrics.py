@@ -23,19 +23,19 @@ def get_ec2_cpu():
         Unit='Percent'
     )
     result = response["Datapoints"][0]["Average"]
-    print(result)
+    # print(result)
     return result
 
 
 def get_ec2_mem():
     client = boto3.client('cloudwatch')
     response = client.get_metric_statistics(
-        Namespace='AWS/EC2',
+        Namespace='System/Linux',
         MetricName='MemoryUtilization',
         Dimensions=[
             {
                 'Name': 'InstanceId',
-                'Value': ec2_metadata.instance_id
+                'Value': 'i-0be6e0def59a1f87b'
             },
         ],
         StartTime=datetime.today() - timedelta(seconds=300),
@@ -47,5 +47,7 @@ def get_ec2_mem():
         Unit='Percent'
     )
     result = response["Datapoints"][0]["Average"]
-    print(result)
+    # print(result)
     return result
+
+get_ec2_mem()
