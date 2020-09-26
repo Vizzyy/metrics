@@ -5,7 +5,7 @@ import psutil
 from config import *
 import datetime
 import time
-from ec2metrics import get_ec2_cpu
+from ec2metrics import get_ec2_cpu, get_ec2_mem
 
 
 metrics = {}
@@ -32,9 +32,12 @@ def record_cpu_util(ec2):
     metrics["cpu_util"] = cpu_util
 
 
-def record_mem_util():
+def record_mem_util(ec2):
     global metrics
-    mem_util = psutil.virtual_memory().percent
+    if ec2:
+        mem_util = get_ec2_mem()
+    else:
+        mem_util = psutil.virtual_memory().percent
     metrics["mem_util"] = mem_util
 
 
@@ -83,7 +86,7 @@ if __name__ == "__main__":
     if args.cpu_util:
         record_cpu_util(args.ec2)
     if args.mem_util:
-        record_mem_util()
+        record_mem_util(args.ec2)
     if args.disk_util:
         record_disk_util()
     if args.cpu_temp:
