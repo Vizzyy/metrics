@@ -5,6 +5,7 @@ import psutil
 from config import *
 import datetime
 import time
+from ec2metrics import get_ec2_cpu
 
 
 metrics = {}
@@ -18,12 +19,16 @@ def arguments():
     parser.add_argument('--cpu_temp', help='Record CPU temperature.', action='store_true')
     parser.add_argument('--uptime', help='Record server uptime.', action='store_true')
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
+    parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
     return parser.parse_args()
 
 
-def record_cpu_util():
+def record_cpu_util(ec2):
     global metrics
-    cpu_util = psutil.cpu_percent()
+    if ec2:
+        cpu_util = get_ec2_cpu
+    else:
+        cpu_util = psutil.cpu_percent()
     metrics["cpu_util"] = cpu_util
 
 
@@ -76,7 +81,7 @@ def persist_metrics():
 if __name__ == "__main__":
     args = arguments()
     if args.cpu_util:
-        record_cpu_util()
+        record_cpu_util(args.ec2)
     if args.mem_util:
         record_mem_util()
     if args.disk_util:
