@@ -14,6 +14,7 @@ metrics = {}
 def arguments():
     parser = argparse.ArgumentParser(description='A script that records server metrics.')
     parser.add_argument('--cpu_util', help='Record CPU Utilization.', action='store_true')
+    parser.add_argument('--cpu_load', help='Record CPU load average.', action='store_true')
     parser.add_argument('--mem_util', help='Record Memory Utilization.', action='store_true')
     parser.add_argument('--disk_util', help='Record Disk Utilization.', action='store_true')
     parser.add_argument('--cpu_temp', help='Record CPU temperature.', action='store_true')
@@ -30,6 +31,13 @@ def record_cpu_util(ec2):
     else:
         cpu_util = psutil.cpu_percent()
     metrics["cpu_util"] = cpu_util
+
+
+def record_avg_cpu_load():
+    # Returns tuple of processes in the system run queue averaged over the last 1, 5, and 15 minutes
+    # We select the avg of last minute (pos. 0)
+    cpu_load = psutil.getloadavg()[0]
+    metrics["cpu_load"] = cpu_load
 
 
 def record_mem_util(ec2):
@@ -85,6 +93,8 @@ if __name__ == "__main__":
     args = arguments()
     if args.cpu_util:
         record_cpu_util(args.ec2)
+    if args.cpu_load:
+        record_avg_cpu_load()
     if args.mem_util:
         record_mem_util(args.ec2)
     if args.disk_util:
