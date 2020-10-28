@@ -23,7 +23,7 @@ def get_network_avg(metric):
             try:
                 temp = float(query_results[i]['value'] - query_results[i+1]['value'])
                 results += temp
-            except IndexError as e:
+            except IndexError:
                 break
 
         avg = results / float(len(query_results))

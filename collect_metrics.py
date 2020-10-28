@@ -16,10 +16,10 @@ def arguments():
     parser = argparse.ArgumentParser(description='A script that records server metrics.')
     parser.add_argument('--cpu_util', help='Record CPU Utilization.', action='store_true')
     parser.add_argument('--cpu_load', help='Record CPU load average.', action='store_true')
-    parser.add_argument('--network_sent', help='Record network bytes sent.', action='store_true')
-    parser.add_argument('--network_recv', help='Record network bytes received.', action='store_true')
-    parser.add_argument('--network_sent_avg', help='Record 5 min avg of bytes sent.', action='store_true')
-    parser.add_argument('--network_recv_avg', help='Record 5 min avg of bytes received.', action='store_true')
+    parser.add_argument('--network_sent', help='Record network bytes (MB) sent.', action='store_true')
+    parser.add_argument('--network_recv', help='Record network bytes (MB) received.', action='store_true')
+    parser.add_argument('--network_sent_avg', help='Record 5 min avg of bytes (MB) sent.', action='store_true')
+    parser.add_argument('--network_recv_avg', help='Record 5 min avg of bytes (MB) received.', action='store_true')
     parser.add_argument('--mem_util', help='Record Memory Utilization.', action='store_true')
     parser.add_argument('--disk_util', help='Record Disk Utilization.', action='store_true')
     parser.add_argument('--cpu_temp', help='Record CPU temperature.', action='store_true')
@@ -47,7 +47,7 @@ def record_avg_cpu_load():
 
 
 def record_network_sent():
-    metrics["network_sent"] = psutil.net_io_counters().bytes_sent
+    metrics["network_sent"] = psutil.net_io_counters().bytes_sent/1024/1024
 
 
 def record_network_sent_avg():
@@ -56,7 +56,7 @@ def record_network_sent_avg():
 
 
 def record_network_recv():
-    metrics["network_recv"] = psutil.net_io_counters().bytes_recv
+    metrics["network_recv"] = psutil.net_io_counters().bytes_recv/1024/1024
 
 
 def record_network_recv_avg():
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         record_network_sent_avg()
     if args.network_recv_avg or args.all:
         record_network_recv_avg()
-    if args.persist or args.all:
+    if args.persist:
         persist_metrics()
     else:
         print(f"Metrics: {metrics}")
