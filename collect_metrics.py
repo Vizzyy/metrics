@@ -26,6 +26,7 @@ def arguments():
     parser.add_argument('--uptime', help='Record server uptime.', action='store_true')
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
     parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
+    parser.add_argument('--exclude_lo', help='Exclude localhost loopback from network metrics.', action='store_true')
     parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 flag)', action='store_true')
     return parser.parse_args()
 
@@ -40,26 +41,47 @@ def record_cpu_util(ec2):
 
 
 def record_avg_cpu_load():
+    global metrics
     # Returns tuple of processes in the system run queue averaged over the last 1, 5, and 15 minutes
     # We select the avg of last minute (pos. 0)
     cpu_load = psutil.getloadavg()[0]
     metrics["cpu_load"] = cpu_load
 
 
-def record_network_sent():
-    metrics["network_sent"] = psutil.net_io_counters().bytes_sent/1024/1024
+def record_network_sent(exclude_lo):
+    global metrics
+    if exclude_lo:
+        net_io = psutil.net_io_counters(pernic=True)
+        total_bytes = 0
+        for interface in net_io.keys():
+            if "lo" not in interface:
+                total_bytes += net_io[interface].bytes_sent
+        metrics["network_sent"] = total_bytes/1024/1024
+    else:
+        metrics["network_sent"] = psutil.net_io_counters().bytes_sent/1024/1024
 
 
 def record_network_sent_avg():
+    global metrics
     five_min_avg = get_network_avg("network_sent")
     metrics["network_sent_avg"] = five_min_avg
 
 
-def record_network_recv():
-    metrics["network_recv"] = psutil.net_io_counters().bytes_recv/1024/1024
+def record_network_recv(exclude_lo):
+    global metrics
+    if exclude_lo:
+        net_io = psutil.net_io_counters(pernic=True)
+        total_bytes = 0
+        for interface in net_io.keys():
+            if "lo" not in interface:
+                total_bytes += net_io[interface].bytes_recv
+        metrics["network_recv"] = total_bytes/1024/1024
+    else:
+        metrics["network_recv"] = psutil.net_io_counters().bytes_recv/1024/1024
 
 
 def record_network_recv_avg():
+    global metrics
     five_min_avg = get_network_avg("network_recv")
     metrics["network_recv_avg"] = five_min_avg
 
@@ -128,9 +150,9 @@ if __name__ == "__main__":
     if args.uptime or args.all:
         record_uptime()
     if args.network_sent or args.all:
-        record_network_sent()
+        record_network_sent(args.exclude_lo)
     if args.network_recv or args.all:
-        record_network_recv()
+        record_network_recv(args.exclude_lo)
     if args.network_sent_avg or args.all:
         record_network_sent_avg()
     if args.network_recv_avg or args.all:
