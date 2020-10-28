@@ -3,3 +3,4 @@ config.py
 *.iml
 .DS_Store
 vizzyy.ddns.net_full_ca.crt
+metrics.log

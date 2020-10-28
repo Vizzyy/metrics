@@ -6,6 +6,7 @@ from config import *
 import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem
+from network_metrics import get_network_avg
 
 
 metrics = {}
@@ -15,12 +16,17 @@ def arguments():
     parser = argparse.ArgumentParser(description='A script that records server metrics.')
     parser.add_argument('--cpu_util', help='Record CPU Utilization.', action='store_true')
     parser.add_argument('--cpu_load', help='Record CPU load average.', action='store_true')
+    parser.add_argument('--network_sent', help='Record network bytes sent.', action='store_true')
+    parser.add_argument('--network_recv', help='Record network bytes received.', action='store_true')
+    parser.add_argument('--network_sent_avg', help='Record 5 min avg of bytes sent.', action='store_true')
+    parser.add_argument('--network_recv_avg', help='Record 5 min avg of bytes received.', action='store_true')
     parser.add_argument('--mem_util', help='Record Memory Utilization.', action='store_true')
     parser.add_argument('--disk_util', help='Record Disk Utilization.', action='store_true')
     parser.add_argument('--cpu_temp', help='Record CPU temperature.', action='store_true')
     parser.add_argument('--uptime', help='Record server uptime.', action='store_true')
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
     parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
+    parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 flag)', action='store_true')
     return parser.parse_args()
 
 
@@ -38,6 +44,24 @@ def record_avg_cpu_load():
     # We select the avg of last minute (pos. 0)
     cpu_load = psutil.getloadavg()[0]
     metrics["cpu_load"] = cpu_load
+
+
+def record_network_sent():
+    metrics["network_sent"] = psutil.net_io_counters().bytes_sent
+
+
+def record_network_sent_avg():
+    five_min_avg = get_network_avg("network_sent")
+    metrics["network_sent_avg"] = five_min_avg
+
+
+def record_network_recv():
+    metrics["network_recv"] = psutil.net_io_counters().bytes_recv
+
+
+def record_network_recv_avg():
+    five_min_avg = get_network_avg("network_recv")
+    metrics["network_recv_avg"] = five_min_avg
 
 
 def record_mem_util(ec2):
@@ -91,19 +115,27 @@ def persist_metrics():
 
 if __name__ == "__main__":
     args = arguments()
-    if args.cpu_util:
+    if args.cpu_util or args.all:
         record_cpu_util(args.ec2)
-    if args.cpu_load:
+    if args.cpu_load or args.all:
         record_avg_cpu_load()
-    if args.mem_util:
+    if args.mem_util or args.all:
         record_mem_util(args.ec2)
-    if args.disk_util:
+    if args.disk_util or args.all:
         record_disk_util()
-    if args.cpu_temp:
+    if args.cpu_temp or args.all:
         record_cpu_temp()
-    if args.uptime:
+    if args.uptime or args.all:
         record_uptime()
-    if args.persist:
+    if args.network_sent or args.all:
+        record_network_sent()
+    if args.network_recv or args.all:
+        record_network_recv()
+    if args.network_sent_avg or args.all:
+        record_network_sent_avg()
+    if args.network_recv_avg or args.all:
+        record_network_recv_avg()
+    if args.persist or args.all:
         persist_metrics()
     else:
         print(f"Metrics: {metrics}")
