@@ -8,7 +8,7 @@ def get_network_avg(metric):
     now = datetime.datetime.now()
     five_minutes = datetime.timedelta(minutes=5)
     five_minutes_ago = now - five_minutes
-    print(now)
+    # print(now)
     try:
         cursor = db.cursor(dictionary=True)
         sql = f"select * from graphing_data.server_metrics " \

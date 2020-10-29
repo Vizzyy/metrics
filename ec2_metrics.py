@@ -35,3 +35,10 @@ def get_ec2_cpu():
 def get_ec2_mem():
     return get_ec2_metric('System/Linux', 'MemoryUtilization')
 
+
+def get_ec2_network_in():
+    return get_ec2_metric('AWS/EC2', 'NetworkIn')
+
+
+def get_ec2_network_out():
+    return get_ec2_metric('AWS/EC2', 'NetworkOut')
