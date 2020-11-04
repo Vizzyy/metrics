@@ -35,3 +35,4 @@ DISK_DRIVES = ['/', '/System/Volumes/Data']
 */1 * * * * /usr/bin/python3 -u /home/pi/metrics/collect_metrics.py --cpu_util --mem_util --disk_util --cpu_temp --uptime --persist >> /home/pi/metrics/metrics.log
 ```
 
+
