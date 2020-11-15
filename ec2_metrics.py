@@ -15,8 +15,8 @@ def get_ec2_metric(namespace, metricname):
                 'Value': ec2_metadata.instance_id
             },
         ],
-        StartTime=datetime.today() - timedelta(seconds=300),
-        EndTime=datetime.today(),
+        StartTime=datetime.utcnow() - timedelta(seconds=300),
+        EndTime=datetime.utcnow(),
         Period=300,
         Statistics=[
             'Average',
@@ -33,7 +33,7 @@ def get_ec2_cpu():
 
 
 def get_ec2_mem():
-    return get_ec2_metric('System/Linux', 'MemoryUtilization')
+    return get_ec2_metric('CWAgent', 'mem_used_percent')
 
 
 def get_ec2_network_in():
