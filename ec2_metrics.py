@@ -23,8 +23,12 @@ def get_ec2_metric(namespace, metricname):
         ],
         Unit='Percent'
     )
-    result = response["Datapoints"][0]["Average"]
-    # print(result)
+    try:
+        result = response["Datapoints"][0]["Average"]
+    except Exception as e:
+        print(e)
+        result = 0
+        print(response)
     return result
 
 
