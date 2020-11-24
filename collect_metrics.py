@@ -7,6 +7,7 @@ import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem
 from network_metrics import get_network_avg
+from climate import get_climate_measurements
 
 
 metrics = {}
@@ -27,7 +28,8 @@ def arguments():
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
     parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
     parser.add_argument('--exclude_lo', help='Exclude localhost loopback from network metrics.', action='store_true')
-    parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 flag)', action='store_true')
+    parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 or Climate)', action='store_true')
+    parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
     return parser.parse_args()
 
 
@@ -120,6 +122,13 @@ def record_uptime():
     metrics["uptime"] = days_uptime
 
 
+def record_climate():
+    global metrics
+    climate_readings = get_climate_measurements()
+    metrics["climate_humid"] = climate_readings[0]
+    metrics["climate_temp"] = climate_readings[1]
+
+
 def persist_metrics():
     global metrics
     try:
@@ -157,6 +166,8 @@ if __name__ == "__main__":
         record_network_sent_avg()
     if args.network_recv_avg or args.all:
         record_network_recv_avg()
+    if args.climate:
+        record_climate()
     if args.persist:
         persist_metrics()
     else:
