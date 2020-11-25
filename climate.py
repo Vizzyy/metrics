@@ -1,5 +1,3 @@
-
-
 def get_climate_measurements():
     import Adafruit_DHT
 
@@ -9,8 +7,6 @@ def get_climate_measurements():
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 
     if humidity is not None and temperature is not None:
-        print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
+        return humidity, temperature
     else:
-        print('Failed to get reading.')
-    return humidity, temperature
-
+        print('Failed to get climate reading.')

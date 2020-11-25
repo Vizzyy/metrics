@@ -126,7 +126,9 @@ def record_climate():
     global metrics
     climate_readings = get_climate_measurements()
     metrics["climate_humid"] = climate_readings[0]
-    metrics["climate_temp"] = climate_readings[1]
+    metrics["climate_temp_c"] = climate_readings[1]
+    fahrenheit = (climate_readings[1] * 9/5) + 32
+    metrics["climate_temp_f"] = fahrenheit
 
 
 def persist_metrics():
