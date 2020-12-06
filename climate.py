@@ -1,7 +1,7 @@
 def get_climate_measurements():
     import Adafruit_DHT
 
-    sensor = Adafruit_DHT.DHT11  # DHT11 Temperature/Humidity Sensor
+    sensor = Adafruit_DHT.DHT11  # DHT22 Temperature/Humidity Sensor
     pin = 4  # Pi data pin.
 
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
