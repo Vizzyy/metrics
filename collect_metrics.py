@@ -115,7 +115,7 @@ def record_cpu_temp(osx):
             metrics["cpu_temp"] = cpu_temp
         else:
             import os
-            stream = os.popen('osx-cpu-temp')
+            stream = os.popen('/usr/local/bin/osx-cpu-temp')
             cpu_temp = stream.read().split(" ")[0]
             metrics["cpu_temp"] = cpu_temp
 
