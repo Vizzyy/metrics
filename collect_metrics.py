@@ -27,6 +27,7 @@ def arguments():
     parser.add_argument('--uptime', help='Record server uptime.', action='store_true')
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
     parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
+    parser.add_argument('--osx', help='Use custom osx libraries.', action='store_true')
     parser.add_argument('--exclude_lo', help='Exclude localhost loopback from network metrics.', action='store_true')
     parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 or Climate)', action='store_true')
     parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
@@ -105,12 +106,19 @@ def record_disk_util():
         metrics[f"disk_util_{drive}"] = util
 
 
-def record_cpu_temp():
+def record_cpu_temp(osx):
     global metrics
     try:
-        # Should work on any non-Mac linux box
-        cpu_temp = psutil.sensors_temperatures()[list(psutil.sensors_temperatures())[0]][0][1]
-        metrics["cpu_temp"] = cpu_temp
+        if not osx:
+            # Should work on any non-Mac linux box
+            cpu_temp = psutil.sensors_temperatures()[list(psutil.sensors_temperatures())[0]][0][1]
+            metrics["cpu_temp"] = cpu_temp
+        else:
+            import os
+            stream = os.popen('osx-cpu-temp')
+            cpu_temp = stream.read().split(" ")[0]
+            metrics["cpu_temp"] = cpu_temp
+
     except Exception as e:
         print(e)
 
@@ -157,7 +165,7 @@ if __name__ == "__main__":
     if args.disk_util or args.all:
         record_disk_util()
     if args.cpu_temp or args.all:
-        record_cpu_temp()
+        record_cpu_temp(args.osx)
     if args.uptime or args.all:
         record_uptime()
     if args.network_sent or args.all:
