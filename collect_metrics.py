@@ -9,7 +9,6 @@ from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost
 from network_metrics import get_network_avg
 from climate import get_climate_measurements
 
-
 metrics = {}
 
 
@@ -53,6 +52,11 @@ def record_avg_cpu_load():
     # Returns tuple of processes in the system run queue averaged over the last 1, 5, and 15 minutes
     # We select the avg of last minute (pos. 0)
     cpu_load = psutil.getloadavg()[0]
+    num_physical_cores = psutil.cpu_count(logical=False)
+    if num_physical_cores > 1:
+        metrics["cpu_load_multi_core"] = cpu_load
+    else:
+        metrics["cpu_load_single_core"] = cpu_load
     metrics["cpu_load"] = cpu_load
 
 
@@ -64,9 +68,9 @@ def record_network_sent(exclude_lo):
         for interface in net_io.keys():
             if "lo" not in interface:
                 total_bytes += net_io[interface].bytes_sent
-        metrics["network_sent"] = total_bytes/1024/1024
+        metrics["network_sent"] = total_bytes / 1024 / 1024
     else:
-        metrics["network_sent"] = psutil.net_io_counters().bytes_sent/1024/1024
+        metrics["network_sent"] = psutil.net_io_counters().bytes_sent / 1024 / 1024
 
 
 def record_network_sent_avg():
@@ -83,9 +87,9 @@ def record_network_recv(exclude_lo):
         for interface in net_io.keys():
             if "lo" not in interface:
                 total_bytes += net_io[interface].bytes_recv
-        metrics["network_recv"] = total_bytes/1024/1024
+        metrics["network_recv"] = total_bytes / 1024 / 1024
     else:
-        metrics["network_recv"] = psutil.net_io_counters().bytes_recv/1024/1024
+        metrics["network_recv"] = psutil.net_io_counters().bytes_recv / 1024 / 1024
 
 
 def record_network_recv_avg():
@@ -131,7 +135,7 @@ def record_cpu_temp(osx):
 def record_uptime():
     global metrics
     seconds_uptime = time.time() - psutil.boot_time()
-    days_uptime = math.floor(seconds_uptime / (3600*24))
+    days_uptime = math.floor(seconds_uptime / (3600 * 24))
     metrics["uptime"] = days_uptime
 
 
@@ -140,7 +144,7 @@ def record_climate():
     climate_readings = get_climate_measurements()
     metrics["climate_humid"] = climate_readings[0]
     metrics["climate_temp_c"] = climate_readings[1]
-    fahrenheit = (climate_readings[1] * 9/5) + 32
+    fahrenheit = (climate_readings[1] * 9 / 5) + 32
     metrics["climate_temp_f"] = fahrenheit
 
 
@@ -194,4 +198,3 @@ if __name__ == "__main__":
         persist_metrics()
     else:
         print(f"Metrics: {metrics}")
-
