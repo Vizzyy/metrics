@@ -1,5 +1,5 @@
 import boto3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from ec2_metadata import ec2_metadata
 
@@ -30,6 +30,23 @@ def get_ec2_metric(namespace, metricname):
         result = 0
         print(response)
     return result
+
+
+def get_aws_cost():
+    billing_client = boto3.client('ce')
+
+    end = str(date.today())
+    start = str(date.today() - timedelta(days=30))
+    response = billing_client.get_cost_and_usage(
+        TimePeriod={
+            'Start': start,
+            'End': end
+        },
+        Granularity='MONTHLY',
+        Metrics=['UnblendedCost']
+    )
+    amount = response["ResultsByTime"][len(response["ResultsByTime"]) - 1]["Total"]["UnblendedCost"]["Amount"]
+    return amount
 
 
 def get_ec2_cpu():

@@ -5,7 +5,7 @@ import psutil
 from config import *
 import datetime
 import time
-from ec2_metrics import get_ec2_cpu, get_ec2_mem
+from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost
 from network_metrics import get_network_avg
 from climate import get_climate_measurements
 
@@ -28,9 +28,14 @@ def arguments():
     parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
     parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
     parser.add_argument('--osx', help='Use custom osx libraries.', action='store_true')
-    parser.add_argument('--exclude_lo', help='Exclude localhost loopback from network metrics.', action='store_true')
-    parser.add_argument('--all', help='Gather all metrics. (Does not include EC2 or Climate)', action='store_true')
+    parser.add_argument('--exclude_lo',
+                        help='Exclude localhost loopback from network metrics.',
+                        action='store_true')
+    parser.add_argument('--all',
+                        help='Gather all metrics. (Does not include EC2, Climate, AwsCost, OSX)',
+                        action='store_true')
     parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
+    parser.add_argument('--aws_cost', help='Record current month AWS cost.', action='store_true')
     return parser.parse_args()
 
 
@@ -154,6 +159,11 @@ def persist_metrics():
         print(e)
 
 
+def record_aws_cost():
+    global metrics
+    metrics["aws_cost"] = get_aws_cost()
+
+
 if __name__ == "__main__":
     args = arguments()
     if args.cpu_util or args.all:
@@ -176,6 +186,8 @@ if __name__ == "__main__":
         record_network_sent_avg()
     if args.network_recv_avg or args.all:
         record_network_recv_avg()
+    if args.aws_cost:
+        record_aws_cost()
     if args.climate:
         record_climate()
     if args.persist:
