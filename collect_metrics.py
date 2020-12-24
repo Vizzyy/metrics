@@ -32,7 +32,7 @@ def arguments():
                         help='Exclude localhost loopback from network metrics.',
                         action='store_true')
     parser.add_argument('--all',
-                        help='Gather all metrics. (Does not include EC2, Climate, AwsCost, OSX)',
+                        help='Gather all metrics. (Does not include EC2, Climate, AwsCost, OSX, Uptime)',
                         action='store_true')
     parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
     parser.add_argument('--aws_cost', help='Record current month AWS cost.', action='store_true')
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         record_disk_util()
     if args.cpu_temp or args.all:
         record_cpu_temp(args.osx)
-    if args.uptime or args.all:
+    if args.uptime:
         record_uptime()
     if args.network_sent or args.all:
         record_network_sent(args.exclude_lo)
