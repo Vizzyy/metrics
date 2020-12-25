@@ -4,27 +4,34 @@ from datetime import datetime, timedelta, date
 from ec2_metadata import ec2_metadata
 
 
-def get_ec2_metric(namespace, metricname):
+def get_ec2_metric(namespace, metric_name, custom_dimensions=None, period=300, statistic='Average', unit='Percent',
+                   start_time_seconds=300):
     client = boto3.client('cloudwatch')
-    response = client.get_metric_statistics(
-        Namespace=namespace,
-        MetricName=metricname,
-        Dimensions=[
+
+    if custom_dimensions is not None:
+        dimensions = custom_dimensions
+    else:
+        dimensions = [
             {
                 'Name': 'InstanceId',
                 'Value': ec2_metadata.instance_id
             },
-        ],
-        StartTime=datetime.utcnow() - timedelta(seconds=300),
+        ]
+
+    response = client.get_metric_statistics(
+        Namespace=namespace,
+        MetricName=metric_name,
+        Dimensions=dimensions,
+        StartTime=datetime.utcnow() - timedelta(seconds=start_time_seconds),
         EndTime=datetime.utcnow(),
-        Period=300,
+        Period=period,
         Statistics=[
-            'Average',
+            statistic,
         ],
-        Unit='Percent'
+        Unit=unit
     )
     try:
-        result = response["Datapoints"][0]["Average"]
+        result = response["Datapoints"][0][statistic]
     except Exception as e:
         print(e)
         result = 0
@@ -33,20 +40,8 @@ def get_ec2_metric(namespace, metricname):
 
 
 def get_aws_cost():
-    billing_client = boto3.client('ce')
-
-    end = str(date.today())
-    start = str(date.today() - timedelta(days=30))
-    response = billing_client.get_cost_and_usage(
-        TimePeriod={
-            'Start': start,
-            'End': end
-        },
-        Granularity='MONTHLY',
-        Metrics=['UnblendedCost']
-    )
-    amount = response["ResultsByTime"][len(response["ResultsByTime"]) - 1]["Total"]["UnblendedCost"]["Amount"]
-    return amount
+    return get_ec2_metric('AWS/Billing', 'EstimatedCharges', [{'Name': 'Currency', 'Value': 'USD'}], 60, 'Maximum',
+                          'None', 30000)
 
 
 def get_ec2_cpu():
