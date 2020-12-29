@@ -5,7 +5,7 @@ import psutil
 from config import *
 import datetime
 import time
-from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost
+from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
 from network_metrics import get_network_avg
 from climate import get_climate_measurements
 
@@ -35,6 +35,7 @@ def arguments():
                         action='store_true')
     parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
     parser.add_argument('--aws_cost', help='Record current month AWS cost.', action='store_true')
+    parser.add_argument('--queue_depth', help='Record estimated queue depth.', action='store_true')
     return parser.parse_args()
 
 
@@ -168,6 +169,11 @@ def record_aws_cost():
     metrics["aws_cost"] = get_aws_cost()
 
 
+def record_queue_depth():
+    global metrics
+    metrics["queue_depth"] = get_queue_depth(queue_name)
+
+
 if __name__ == "__main__":
     args = arguments()
     if args.cpu_util or args.all:
@@ -192,6 +198,8 @@ if __name__ == "__main__":
         record_network_recv_avg()
     if args.aws_cost:
         record_aws_cost()
+    if args.queue_depth:
+        record_queue_depth()
     if args.climate:
         record_climate()
     if args.persist:

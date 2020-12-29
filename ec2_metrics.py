@@ -44,6 +44,12 @@ def get_aws_cost():
                           'None', 30000)
 
 
+def get_queue_depth(queue):
+    sqsr = boto3.resource('sqs')
+    queue = sqsr.get_queue_by_name(QueueName=queue)
+    return queue.attributes["ApproximateNumberOfMessages"]
+
+
 def get_ec2_cpu():
     return get_ec2_metric('AWS/EC2', 'CPUUtilization')
 
