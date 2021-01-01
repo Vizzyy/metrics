@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "Assuming DB entry already made"
+echo "Crontab entries commented out"
 git fetch --all
 git stash
 git checkout daemon
