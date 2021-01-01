@@ -197,7 +197,6 @@ def every_minute_job():
     if args.mem_util: record_mem_util(args.ec2)
     if args.disk_util: record_disk_util()
     if args.cpu_temp: record_cpu_temp(args.osx)
-
     if args.network_sent: record_network_sent(args.exclude_lo)
     if args.network_recv: record_network_recv(args.exclude_lo)
     if args.network_sent_avg: record_network_sent_avg()
