@@ -1,0 +1,13 @@
+[Unit]
+Description=Metrics Service
+
+[Service]
+WorkingDirectory=/home/pi/metrics
+ExecStart=/usr/bin/python3 -u collect_metrics.py
+User=pi
+Type=simple
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,3 @@
-import argparse
 import math
 import shutil
 import psutil
@@ -8,35 +7,13 @@ import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
 from network_metrics import get_network_avg
 from climate import get_climate_measurements
+import mysql.connector
+import schedule
 
 metrics = {}
-
-
-def arguments():
-    parser = argparse.ArgumentParser(description='A script that records server metrics.')
-    parser.add_argument('--cpu_util', help='Record CPU Utilization.', action='store_true')
-    parser.add_argument('--cpu_load', help='Record CPU load average.', action='store_true')
-    parser.add_argument('--network_sent', help='Record network bytes (MB) sent.', action='store_true')
-    parser.add_argument('--network_recv', help='Record network bytes (MB) received.', action='store_true')
-    parser.add_argument('--network_sent_avg', help='Record 5 min avg of bytes (MB) sent.', action='store_true')
-    parser.add_argument('--network_recv_avg', help='Record 5 min avg of bytes (MB) received.', action='store_true')
-    parser.add_argument('--mem_util', help='Record Memory Utilization.', action='store_true')
-    parser.add_argument('--disk_util', help='Record Disk Utilization.', action='store_true')
-    parser.add_argument('--cpu_temp', help='Record CPU temperature.', action='store_true')
-    parser.add_argument('--uptime', help='Record server uptime.', action='store_true')
-    parser.add_argument('--persist', help='Persists metrics into DB.', action='store_true')
-    parser.add_argument('--ec2', help='Use Boto3 for more accurate metrics.', action='store_true')
-    parser.add_argument('--osx', help='Use custom osx libraries.', action='store_true')
-    parser.add_argument('--exclude_lo',
-                        help='Exclude localhost loopback from network metrics.',
-                        action='store_true')
-    parser.add_argument('--all',
-                        help='Gather all metrics. (Does not include EC2, Climate, AwsCost, OSX, Uptime)',
-                        action='store_true')
-    parser.add_argument('--climate', help='Record climate temperature and humidity.', action='store_true')
-    parser.add_argument('--aws_cost', help='Record current month AWS cost.', action='store_true')
-    parser.add_argument('--queue_depth', help='Record estimated queue depth.', action='store_true')
-    return parser.parse_args()
+db = None
+cursor = None
+args = None
 
 
 def record_cpu_util(ec2):
@@ -149,21 +126,6 @@ def record_climate():
     metrics["climate_temp_f"] = fahrenheit
 
 
-def persist_metrics():
-    global metrics
-    try:
-        now = datetime.datetime.now()
-        metric_keys = metrics.keys()
-        for metric in metric_keys:
-            sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
-                  f"VALUES('{HOSTNAME}', '{now}', '{metric}', '{metrics[metric]}')"
-            cursor.execute(sql)
-        db.commit()
-        print(f"Inserted into DB: {metrics}")
-    except Exception as e:
-        print(e)
-
-
 def record_aws_cost():
     global metrics
     metrics["aws_cost"] = get_aws_cost()
@@ -174,35 +136,108 @@ def record_queue_depth():
     metrics["queue_depth"] = get_queue_depth(queue_name)
 
 
-if __name__ == "__main__":
-    args = arguments()
-    if args.cpu_util or args.all:
-        record_cpu_util(args.ec2)
-    if args.cpu_load or args.all:
-        record_avg_cpu_load()
-    if args.mem_util or args.all:
-        record_mem_util(args.ec2)
-    if args.disk_util or args.all:
-        record_disk_util()
-    if args.cpu_temp or args.all:
-        record_cpu_temp(args.osx)
-    if args.uptime:
-        record_uptime()
-    if args.network_sent or args.all:
-        record_network_sent(args.exclude_lo)
-    if args.network_recv or args.all:
-        record_network_recv(args.exclude_lo)
-    if args.network_sent_avg or args.all:
-        record_network_sent_avg()
-    if args.network_recv_avg or args.all:
-        record_network_recv_avg()
-    if args.aws_cost:
-        record_aws_cost()
-    if args.queue_depth:
-        record_queue_depth()
-    if args.climate:
-        record_climate()
+def initialize_db_conn():
+    global db, cursor
+    try:
+        db = mysql.connector.connect(**SSL_CONFIG)
+        print("Connected to DB!")
+        return True
+    except Exception as e:
+        print(f"Error connecting to DB: {e}")
+        return False
+
+
+def persist_metrics():
+    global db, cursor, metrics
+    try:
+        db.ping(True)
+        now = datetime.datetime.now()
+        metric_keys = metrics.keys()
+        cursor = db.cursor()
+        for metric in metric_keys:
+            params = (HOSTNAME, now, metric, metrics[metric])
+            sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
+                  f"VALUES(%s, %s, %s, %s)"
+            cursor.execute(sql, params)
+        db.commit()
+        cursor.close()
+        print(f"Inserted into DB: {metrics}")
+    except Exception as e:
+        print(f"Error Persisting Metrics: {e}")
+
+
+def pull_host_args():
+    global db, cursor
+    remote_args = None
+
+    try:
+        db.ping(True)
+        cursor = db.cursor(dictionary=True)
+        sql = "select * from graphing_data.metric_host_args where host = %s"
+        cursor.execute(sql, (HOSTNAME,))
+        remote_args = cursor.fetchall()[0]
+        cursor.close()
+        print(f"Pulled host args: {remote_args}")
+    except Exception as e:
+        print(f"Error pulling host args: {e}")
+
+    return remote_args
+
+
+class Struct:
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
+
+def every_minute_job():
+    global args
+
+    if args.cpu_util: record_cpu_util(args.ec2)
+    if args.cpu_load: record_avg_cpu_load()
+    if args.mem_util: record_mem_util(args.ec2)
+    if args.disk_util: record_disk_util()
+    if args.cpu_temp: record_cpu_temp(args.osx)
+
+    if args.network_sent: record_network_sent(args.exclude_lo)
+    if args.network_recv: record_network_recv(args.exclude_lo)
+    if args.network_sent_avg: record_network_sent_avg()
+    if args.network_recv_avg: record_network_recv_avg()
+    if args.queue_depth: record_queue_depth()
+    if args.climate: record_climate()
     if args.persist:
         persist_metrics()
     else:
         print(f"Metrics: {metrics}")
+
+
+def every_hour_job():
+    global args
+
+    if args.uptime: record_uptime()
+    if args.aws_cost: record_aws_cost()
+    if args.persist:
+        persist_metrics()
+    else:
+        print(f"Metrics: {metrics}")
+
+
+if __name__ == "__main__":
+
+    if not db:
+        initialize_db_conn()
+
+    args = Struct(**pull_host_args())
+
+    schedule.every().minute.do(every_minute_job)
+    schedule.every().hour.do(every_minute_job)
+
+    while True:
+        metrics = {}
+
+        if not args.daemon:
+            every_minute_job()
+            every_hour_job()
+            break
+        else:
+            schedule.run_pending()
+            time.sleep(1)

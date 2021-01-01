@@ -34,5 +34,6 @@ def get_network_avg(metric):
 
         result = avg
     except Exception as e:
-        print(e)
+        # print(f"network calc error: {e}")
+        pass
     return result
