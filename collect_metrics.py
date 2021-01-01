@@ -228,7 +228,7 @@ if __name__ == "__main__":
     args = Struct(**pull_host_args())
 
     schedule.every().minute.do(every_minute_job)
-    schedule.every().hour.do(every_minute_job)
+    schedule.every().hour.do(every_hour_job)
 
     while True:
         metrics = {}
