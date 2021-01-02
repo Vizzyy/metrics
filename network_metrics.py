@@ -8,16 +8,18 @@ def get_network_avg(metric):
     now = datetime.datetime.now()
     five_minutes = datetime.timedelta(minutes=5)
     five_minutes_ago = now - five_minutes
-    # print(now)
+    print(f"now: {now} - five_minutes_ago: {five_minutes_ago}")
     try:
+        db.ping(True)
         cursor = db.cursor(dictionary=True)
         sql = f"select * from graphing_data.server_metrics " \
-              f"where hostname = '{HOSTNAME}' " \
-              f"and metric = '{metric}' " \
-              f"and timestamp >= '{five_minutes_ago}' " \
+              f"where hostname = %s " \
+              f"and metric = %s " \
+              f"and timestamp >= %s " \
               f"ORDER BY timestamp DESC"
-        cursor.execute(sql)
+        cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
         query_results = cursor.fetchall()
+        cursor.close()
         print(f"Found {len(query_results)} entries")
         for i in range(0, len(query_results)):
             try:
