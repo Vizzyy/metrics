@@ -5,7 +5,6 @@ from config import *
 import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
-from network_metrics import get_network_avg
 from climate import get_climate_measurements
 import mysql.connector
 import schedule
@@ -147,6 +146,43 @@ def initialize_db_conn():
         return False
 
 
+def get_network_avg(metric):
+    result = 0
+    results = 0.0
+    now = datetime.datetime.now()
+    five_minutes = datetime.timedelta(minutes=5)
+    five_minutes_ago = now - five_minutes
+    try:
+        db.ping(True)
+        cursor = db.cursor(dictionary=True)
+        sql = f"select * from graphing_data.server_metrics " \
+              f"where hostname = %s " \
+              f"and metric = %s " \
+              f"and timestamp >= %s " \
+              f"ORDER BY timestamp DESC"
+        cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
+        query_results = cursor.fetchall()
+        cursor.close()
+        for i in range(0, len(query_results)):
+            try:
+                temp = float(query_results[i]['value'] - query_results[i+1]['value'])
+                results += temp
+            except IndexError:
+                break
+
+        avg = results / float(len(query_results))
+
+        if avg < 0:
+            avg = 0
+
+        result = avg
+    except ZeroDivisionError:
+        pass
+    except Exception as e:
+        print(f"Network Avg error: {e}")
+    return result
+
+
 def persist_metrics():
     global db, cursor, metrics
     try:
@@ -159,9 +195,10 @@ def persist_metrics():
             sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
                   f"VALUES(%s, %s, %s, %s)"
             cursor.execute(sql, params)
-            db.commit()
+        db.commit()
         cursor.close()
         print(f"Inserted into DB: {metrics}")
+        metrics = {}
     except Exception as e:
         print(f"Error Persisting Metrics: {e}")
 
@@ -231,11 +268,9 @@ if __name__ == "__main__":
     schedule.every().hour.do(every_hour_job)
 
     while True:
-        metrics = {}
 
         if not args.daemon:
             every_minute_job()
-            metrics = {}  # reset object
             every_hour_job()
             break
         else:
