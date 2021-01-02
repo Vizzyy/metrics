@@ -27,12 +27,14 @@ def get_network_avg(metric):
                 break
 
         avg = results / float(len(query_results))
-        # print(f"avg: {avg}")
+        print(f"{metric} avg: {avg}")
 
         if avg < 0:
             avg = 0
 
         result = avg
+    except ZeroDivisionError:
+        pass
     except Exception as e:
-        print(e)
+        print(f"Network Avg error: {e}")
     return result
