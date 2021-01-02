@@ -18,12 +18,14 @@ def get_network_avg(metric):
               f"ORDER BY timestamp DESC"
         cursor.execute(sql)
         query_results = cursor.fetchall()
-        # print(f"Found {len(query_results)} entries")
+        print(f"Found {len(query_results)} entries")
         for i in range(0, len(query_results)):
             try:
                 temp = float(query_results[i]['value'] - query_results[i+1]['value'])
+                print(f"temp: {temp}")
                 results += temp
             except IndexError:
+                print("IndexError")
                 break
 
         avg = results / float(len(query_results))
@@ -34,6 +36,7 @@ def get_network_avg(metric):
 
         result = avg
     except ZeroDivisionError:
+        print("ZeroDivisionError")
         pass
     except Exception as e:
         print(f"Network Avg error: {e}")
