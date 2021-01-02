@@ -5,7 +5,7 @@ METRICS_PATH=$2
 
 echo "Assuming DB entry already made"
 echo "Crontab entries commented out"
-pip3 install schedule
+sudo $PYTHON_PATH -m pip install schedule
 echo 'sed -i "s/<python>/$PYTHON_PATH/g" metrics.service'
 echo 'sed -i "s/<metrics>/$METRICS_PATH/g" metrics.service'
 sudo cp metrics.service /etc/systemd/system
