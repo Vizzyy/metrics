@@ -6,8 +6,8 @@ METRICS_PATH=$2
 echo "Assuming DB entry already made"
 echo "Crontab entries commented out"
 pip3 install schedule
-sed -i '' -e "s/<python>/$PYTHON_PATH/g" metrics.service
-sed -i '' -e "s/<metrics>/$METRICS_PATH/g" metrics.service
+sed -i "s/<python>/$PYTHON_PATH/g" metrics.service
+sed -i "s/<metrics>/$METRICS_PATH/g" metrics.service
 sudo cp metrics.service /etc/systemd/system
 echo "Placed service file, be sure to verify python location"
 sudo systemctl daemon-reload
