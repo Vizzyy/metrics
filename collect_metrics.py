@@ -1,3 +1,4 @@
+import json
 import math
 import shutil
 import psutil
@@ -8,11 +9,13 @@ from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
 from climate import get_climate_measurements
 import mysql.connector
 import schedule
+import boto3
 
 metrics = {}
 db = None
 cursor = None
 args = None
+sqs = boto3.client('sqs')
 
 
 def record_cpu_util(ec2):
@@ -183,26 +186,6 @@ def get_network_avg(metric):
     return result
 
 
-def persist_metrics():
-    global db, cursor, metrics
-    try:
-        db.ping(True)
-        now = datetime.datetime.now()
-        metric_keys = metrics.keys()
-        cursor = db.cursor()
-        for metric in metric_keys:
-            params = (HOSTNAME, now, metric, metrics[metric])
-            sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
-                  f"VALUES(%s, %s, %s, %s)"
-            cursor.execute(sql, params)
-        db.commit()
-        cursor.close()
-        print(f"Inserted into DB: {metrics}")
-        metrics = {}
-    except Exception as e:
-        print(f"Error Persisting Metrics: {e}")
-
-
 def pull_host_args():
     global db, cursor
     remote_args = None
@@ -219,6 +202,29 @@ def pull_host_args():
         print(f"Error pulling host args: {e}")
 
     return remote_args
+
+
+def sqs_send():
+    global args, metrics
+
+    queue_url = args.queue
+    now = datetime.datetime.now()
+
+    message = {
+        "action": "insert",
+        "table": "server_metrics",
+        "values": {
+            "hostname": HOSTNAME,
+            "timestamp": now.__str__(),
+            "metrics": metrics
+        }
+    }
+
+    # Send message to SQS queue
+    print(f"Pushing message to queue: {metrics}")
+    response = sqs.send_message(QueueUrl=queue_url, MessageBody=(json.dumps(message)))
+    if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        raise RuntimeError("Could not enqueue message!")
 
 
 class Struct:
@@ -241,7 +247,7 @@ def every_minute_job():
     if args.queue_depth: record_queue_depth()
     if args.climate: record_climate()
     if args.persist:
-        persist_metrics()
+        sqs_send()
     else:
         print(f"Metrics: {metrics}")
 
@@ -252,7 +258,7 @@ def every_hour_job():
     if args.uptime: record_uptime()
     if args.aws_cost: record_aws_cost()
     if args.persist:
-        persist_metrics()
+        sqs_send()
     else:
         print(f"Metrics: {metrics}")
 
