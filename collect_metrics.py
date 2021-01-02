@@ -159,7 +159,7 @@ def persist_metrics():
             sql = f"INSERT INTO graphing_data.server_metrics(hostname, timestamp, metric, value) " \
                   f"VALUES(%s, %s, %s, %s)"
             cursor.execute(sql, params)
-        db.commit()
+            db.commit()
         cursor.close()
         print(f"Inserted into DB: {metrics}")
     except Exception as e:
