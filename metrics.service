@@ -2,8 +2,8 @@
 Description=Metrics Service
 
 [Service]
-WorkingDirectory=/home/pi/metrics
-ExecStart=/usr/bin/python3 -u collect_metrics.py
+WorkingDirectory=<metrics>
+ExecStart=<python> -u collect_metrics.py
 User=pi
 Type=simple
 Restart=on-failure
