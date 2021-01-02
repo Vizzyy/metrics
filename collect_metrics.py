@@ -235,6 +235,7 @@ if __name__ == "__main__":
 
         if not args.daemon:
             every_minute_job()
+            metrics = {}  # reset object
             every_hour_job()
             break
         else:
