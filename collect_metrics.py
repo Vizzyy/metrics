@@ -166,6 +166,7 @@ def get_network_avg(metric):
         cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
         query_results = cursor.fetchall()
         cursor.close()
+        #print(f"{HOSTNAME} {(HOSTNAME, metric, five_minutes_ago.__str__())} len: {len(query_results)}")
         for i in range(0, len(query_results)):
             try:
                 temp = float(query_results[i]['value'] - query_results[i+1]['value'])
