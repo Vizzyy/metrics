@@ -274,12 +274,9 @@ if __name__ == "__main__":
     schedule.every().minute.do(every_minute_job)
     schedule.every().hour.do(every_hour_job)
 
-    while True:
+    every_minute_job()  # run all metrics once immediately
+    every_hour_job()
 
-        if not args.daemon:
-            every_minute_job()
-            every_hour_job()
-            break
-        else:
-            schedule.run_pending()
-            time.sleep(1)
+    while args.daemon:
+        schedule.run_pending()
+        time.sleep(1)
