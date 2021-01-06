@@ -166,7 +166,6 @@ def get_network_avg(metric):
         cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
         query_results = cursor.fetchall()
         cursor.close()
-        #print(f"{HOSTNAME} {(HOSTNAME, metric, five_minutes_ago.__str__())} len: {len(query_results)}")
         for i in range(0, len(query_results)):
             try:
                 temp = float(query_results[i]['value'] - query_results[i+1]['value'])
@@ -239,7 +238,6 @@ def every_minute_job():
     if args.cpu_util: record_cpu_util(args.ec2)
     if args.cpu_load: record_avg_cpu_load()
     if args.mem_util: record_mem_util(args.ec2)
-    if args.disk_util: record_disk_util()
     if args.cpu_temp: record_cpu_temp(args.osx)
     if args.network_sent: record_network_sent(args.exclude_lo)
     if args.network_recv: record_network_recv(args.exclude_lo)
@@ -258,6 +256,7 @@ def every_hour_job():
 
     if args.uptime: record_uptime()
     if args.aws_cost: record_aws_cost()
+    if args.disk_util: record_disk_util()
     if args.persist:
         sqs_send()
     else:
