@@ -95,6 +95,14 @@ def record_disk_util():
         metrics[f"disk_util_{drive}"] = util
 
 
+def record_directory_size():
+    global metrics
+    for directory in DIRECTORIES:
+        import os
+        usage = os.popen(f'du -sm {directory} | cut -f1')  # return megabytes
+        metrics[f"dir_size_{directory}"] = int(usage.read())
+
+
 def record_cpu_temp(osx):
     global metrics
     try:
@@ -245,6 +253,7 @@ def every_minute_job():
     if args.network_recv_avg: record_network_recv_avg()
     if args.queue_depth: record_queue_depth()
     if args.climate: record_climate()
+    if args.dir_size: record_directory_size()
     if args.persist:
         sqs_send()
     else:
