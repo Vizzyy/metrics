@@ -96,11 +96,14 @@ def record_disk_util():
 
 
 def record_directory_size():
+    import os  # limit this import to those that have this enabled
     global metrics
     for directory in DIRECTORIES:
-        import os
-        usage = os.popen(f'du -sm {directory} | cut -f1')  # return megabytes
-        metrics[f"dir_size_{directory}"] = int(usage.read())
+        try:
+            usage = os.popen(f'du -sm {directory} | cut -f1')  # return megabytes
+            metrics[f"dir_size_{directory}"] = int(usage.read())
+        except Exception as e:
+            print(f"Could not size for {directory} due to: {e}")
 
 
 def record_cpu_temp(osx):
