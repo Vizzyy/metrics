@@ -199,7 +199,7 @@ def get_network_avg(metric):
 
 def cert_expiry():
     import os
-
+    print(cert_expiry_hosts)
     for host in cert_expiry_hosts:
         datetime_object = None
         try:
