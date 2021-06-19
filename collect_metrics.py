@@ -261,7 +261,7 @@ class Struct:
 
 
 def every_minute_job():
-    global args
+    global args, metrics
 
     if args.cpu_util: record_cpu_util(args.ec2)
     if args.cpu_load: record_avg_cpu_load()
@@ -277,11 +277,13 @@ def every_minute_job():
     if args.persist:
         sqs_send()
     else:
-        print(f"Metrics: {metrics}")
+        print(f"Minute Metrics: {metrics}")
+
+    metrics = {}  # reset metrics object
 
 
 def every_hour_job():
-    global args
+    global args, metrics
 
     if args.uptime: record_uptime()
     if args.aws_cost: record_aws_cost()
@@ -290,7 +292,9 @@ def every_hour_job():
     if args.persist:
         sqs_send()
     else:
-        print(f"Metrics: {metrics}")
+        print(f"Hour Metrics: {metrics}")
+
+    metrics = {}  # reset metrics object
 
 
 if __name__ == "__main__":
