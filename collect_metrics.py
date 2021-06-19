@@ -250,7 +250,7 @@ def sqs_send():
 
     # Send message to SQS queue
     print(f"Pushing message to queue: {metrics}")
-    response = sqs.send_message(QueueUrl=queue_url, MessageBody=(json.dumps(message)))
+    response = sqs.send_message(QueueUrl=queue_url, MessageBody=(json.dumps(message, default=default)))
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
         raise RuntimeError("Could not enqueue message!")
 
