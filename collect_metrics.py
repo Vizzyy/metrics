@@ -197,6 +197,23 @@ def get_network_avg(metric):
     return result
 
 
+def cert_expiry():
+    import os
+
+    for host in cert_expiry_hosts:
+        datetime_object = None
+        try:
+            usage = os.popen(f'echo "Q" | openssl s_client -showcerts -servername {host} -connect {host}:443 | openssl x509 -noout -dates')
+            response = usage.read().strip().split("notAfter=")[-1]
+            datetime_object = datetime.datetime.strptime(response, '%b %d %H:%M:%S %Y %Z')
+        except Exception as e:
+            print(f"Could not check cert on {host} due to: {e}")
+            continue
+
+        metrics[f"cert_{host}"] = datetime_object
+        print(f"Host {host} cert expires: {datetime_object}")
+
+
 def pull_host_args():
     global db, cursor
     remote_args = None
@@ -269,6 +286,7 @@ def every_hour_job():
     if args.uptime: record_uptime()
     if args.aws_cost: record_aws_cost()
     if args.disk_util: record_disk_util()
+    if args.cert_expiry: cert_expiry()
     if args.persist:
         sqs_send()
     else:
