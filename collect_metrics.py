@@ -199,19 +199,19 @@ def get_network_avg(metric):
 
 def cert_expiry():
     import os
-    print(cert_expiry_hosts)
     for host in cert_expiry_hosts:
-        datetime_object = None
         try:
             usage = os.popen(f'echo "Q" | openssl s_client -showcerts -servername {host} -connect {host}:443 | openssl x509 -noout -dates')
             response = usage.read().strip().split("notAfter=")[-1]
             datetime_object = datetime.datetime.strptime(response, '%b %d %H:%M:%S %Y %Z')
+            date_today = datetime.datetime.now()
+            days_until_expiration = (datetime_object - date_today).days
+            metrics[f"cert_{host}"] = days_until_expiration
         except Exception as e:
             print(f"Could not check cert on {host} due to: {e}")
             continue
 
-        metrics[f"cert_{host}"] = datetime_object
-        print(f"Host {host} cert expires: {datetime_object}")
+        # print(f"Host {host} cert expires: {datetime_object}, in {days_until_expiration} days.")
 
 
 def pull_host_args():
@@ -232,21 +232,6 @@ def pull_host_args():
     return remote_args
 
 
-def default(obj):
-    """Default JSON serializer."""
-    import calendar, datetime
-
-    if isinstance(obj, datetime.datetime):
-        if obj.utcoffset() is not None:
-            obj = obj - obj.utcoffset()
-        millis = int(
-            calendar.timegm(obj.timetuple()) * 1000 +
-            obj.microsecond / 1000
-        )
-        return millis
-    raise TypeError('Not sure how to serialize %s' % (obj,))
-
-
 def sqs_send():
     global args, metrics
 
@@ -265,7 +250,7 @@ def sqs_send():
 
     # Send message to SQS queue
     print(f"Pushing message to queue: {metrics}")
-    response = sqs.send_message(QueueUrl=queue_url, MessageBody=(json.dumps(message, default=default)))
+    response = sqs.send_message(QueueUrl=queue_url, MessageBody=(json.dumps(message)))
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
         raise RuntimeError("Could not enqueue message!")
 
