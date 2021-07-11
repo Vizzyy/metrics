@@ -197,7 +197,7 @@ def get_network_avg(metric):
     return result
 
 
-def cert_expiry():
+def record_cert_expiry():
     import os
     for host in cert_expiry_hosts:
         try:
@@ -212,6 +212,40 @@ def cert_expiry():
             continue
 
         # print(f"Host {host} cert expires: {datetime_object}, in {days_until_expiration} days.")
+
+
+def record_soil_moisture():
+    try:
+        import board
+        import busio
+        import adafruit_ads1x15.ads1115 as ADS
+        from adafruit_ads1x15.analog_in import AnalogIn
+
+        max_value = moisture_calibration_max
+        min_value = moisture_calibration_min
+        diff_value = max_value - min_value
+
+        # Create the I2C bus
+        i2c = busio.I2C(board.SCL, board.SDA)
+
+        # Create the ADC object using the I2C bus
+        ads = ADS.ADS1115(i2c)
+
+        # Create single-ended input on channel 0
+        chan = AnalogIn(ads, ADS.P0)
+
+        curr_value = chan.value
+        curr_value -= min_value
+
+        moisture_level = ((diff_value - curr_value) / diff_value) * 100
+
+        metrics[f"soil_mositure"] = moisture_level
+
+        print(f"Current: {curr_value} - Moisture Level: {moisture_level}%")
+
+    except Exception as e:
+        print(f"ERROR: {type(e).__name__} while recording soil moisture - {e.args}")
+        pass
 
 
 def pull_host_args():
@@ -288,7 +322,8 @@ def every_hour_job():
     if args.uptime: record_uptime()
     if args.aws_cost: record_aws_cost()
     if args.disk_util: record_disk_util()
-    if args.cert_expiry: cert_expiry()
+    if args.cert_expiry: record_cert_expiry()
+    if args.soil_moisture: record_soil_moisture()
     if args.persist:
         sqs_send()
     else:
