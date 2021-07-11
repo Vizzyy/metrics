@@ -235,9 +235,8 @@ def record_soil_moisture():
         chan = AnalogIn(ads, ADS.P0)
 
         curr_value = chan.value
-        curr_value -= min_value
-
-        moisture_level = ((diff_value - curr_value) / diff_value) * 100
+    
+        moisture_level = 100 - (((curr_value - min_value) / diff_value) * 100)
 
         metrics[f"soil_mositure"] = moisture_level
 
