@@ -3,11 +3,12 @@
 import time
 import board
 import busio
+from config import *
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 
-max_value = 22700
-min_value = 11216
+max_value = moisture_calibration_max
+min_value = moisture_calibration_min
 diff_value = max_value - min_value
 
 # Create the I2C bus
