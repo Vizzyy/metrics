@@ -235,12 +235,17 @@ def record_soil_moisture():
         chan = AnalogIn(ads, ADS.P0)
 
         curr_value = chan.value
-    
+
         moisture_level = 100 - (((curr_value - min_value) / diff_value) * 100)
+
+        if moisture_level > 100:
+            moisture_level = 100
+        if moisture_level < 0:
+            moisture_level = 0
 
         metrics[f"soil_mositure"] = moisture_level
 
-        print(f"Current: {curr_value} - Moisture Level: {moisture_level}%")
+        # print(f"Current: {curr_value} - Moisture Level: {moisture_level}%")
 
     except Exception as e:
         print(f"ERROR: {type(e).__name__} while recording soil moisture - {e.args}")
@@ -307,6 +312,7 @@ def every_minute_job():
     if args.queue_depth: record_queue_depth()
     if args.climate: record_climate()
     if args.dir_size: record_directory_size()
+    if args.soil_moisture: record_soil_moisture()
     if args.persist:
         sqs_send()
     else:
@@ -322,7 +328,6 @@ def every_hour_job():
     if args.aws_cost: record_aws_cost()
     if args.disk_util: record_disk_util()
     if args.cert_expiry: record_cert_expiry()
-    if args.soil_moisture: record_soil_moisture()
     if args.persist:
         sqs_send()
     else:
