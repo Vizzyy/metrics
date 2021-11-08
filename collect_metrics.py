@@ -257,13 +257,24 @@ def record_internet_metrics():
 
     try:
         usage = check_output('speedtest -f json'.split(' '), stderr=STDOUT, timeout=180).decode("utf-8")
-        print(usage)
-        usage_object = json.loads(usage)
-        metrics[f"internet_jitter"] = float(usage_object["ping"]["jitter"])  # milliseconds
-        metrics[f"internet_latency"] = float(usage_object["ping"]["latency"])  # milliseconds
-        metrics[f"internet_download"] = (int(usage_object["download"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
-        metrics[f"internet_upload"] = (int(usage_object["upload"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
+        api_result = None
+        for block in usage.splitlines():
+            try:
+                block_obj = json.loads(block)
+                if block_obj["type"] == "result":
+                    api_result = block_obj
+            except Exception as e:
+                print(f"Parsing speedtest cli blocks: {type(e).__name__} - {e}")
+
+        if not api_result:
+            raise Exception("No viable api result!")
+
+        metrics[f"internet_jitter"] = float(api_result["ping"]["jitter"])  # milliseconds
+        metrics[f"internet_latency"] = float(api_result["ping"]["latency"])  # milliseconds
+        metrics[f"internet_download"] = (int(api_result["download"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
+        metrics[f"internet_upload"] = (int(api_result["upload"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
     except Exception as e:
+        print(usage)
         print(f"[{type(e).__name__}] Could not gather internet metrics due to: {e}")
 
 
@@ -340,7 +351,7 @@ def record_internet_metrics_job():
     global args, metrics
 
     if args.internet: record_internet_metrics()
-    if args.persist:
+    if args.persist and len(metrics.keys()) > 0:
         sqs_send()
     else:
         print(f"record_internet_metrics_job Metrics: {metrics}")
