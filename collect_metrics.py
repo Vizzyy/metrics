@@ -267,6 +267,7 @@ def record_internet_metrics():
                 print(f"Parsing speedtest cli blocks: {type(e).__name__} - {e}")
 
         if not api_result:
+            print(usage)
             raise Exception("No viable api result!")
 
         metrics[f"internet_jitter"] = float(api_result["ping"]["jitter"])  # milliseconds
@@ -274,7 +275,6 @@ def record_internet_metrics():
         metrics[f"internet_download"] = (int(api_result["download"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
         metrics[f"internet_upload"] = (int(api_result["upload"]["bandwidth"]) * 8) / 1000 / 1000  # Mbps
     except Exception as e:
-        print(usage)
         print(f"[{type(e).__name__}] Could not gather internet metrics due to: {e}")
 
 
