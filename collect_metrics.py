@@ -335,18 +335,6 @@ def every_minute_job():
     metrics = {}  # reset metrics object
 
 
-def every_five_mins_job():
-    global args, metrics
-
-    if args.internet: record_internet_metrics()
-    if args.persist:
-        sqs_send()
-    else:
-        print(f"Five Mins Metrics: {metrics}")
-
-    metrics = {}  # reset metrics object
-
-
 def every_hour_job():
     global args, metrics
 
@@ -354,6 +342,7 @@ def every_hour_job():
     if args.aws_cost: record_aws_cost()
     if args.disk_util: record_disk_util()
     if args.cert_expiry: record_cert_expiry()
+    if args.internet: record_internet_metrics()
     if args.persist:
         sqs_send()
     else:
@@ -370,12 +359,10 @@ if __name__ == "__main__":
     args = Struct(**pull_host_args())
 
     schedule.every().minute.do(every_minute_job)
-    schedule.every(5).minutes.do(every_five_mins_job)
     schedule.every().hour.do(every_hour_job)
 
     every_minute_job()  # run all metrics once immediately
     every_hour_job()
-    every_five_mins_job()
 
     while args.daemon:
         schedule.run_pending()
