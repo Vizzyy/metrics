@@ -257,6 +257,7 @@ def record_internet_metrics():
 
     try:
         usage = check_output('speedtest -f json'.split(' '), stderr=STDOUT, timeout=180).decode("utf-8")
+        print(usage)
         usage_object = json.loads(usage)
         metrics[f"internet_jitter"] = float(usage_object["ping"]["jitter"])  # milliseconds
         metrics[f"internet_latency"] = float(usage_object["ping"]["latency"])  # milliseconds
@@ -335,14 +336,14 @@ def every_minute_job():
     metrics = {}  # reset metrics object
 
 
-def every_five_mins_job():
+def record_internet_metrics_job():
     global args, metrics
 
     if args.internet: record_internet_metrics()
     if args.persist:
         sqs_send()
     else:
-        print(f"Five Mins Metrics: {metrics}")
+        print(f"record_internet_metrics_job Metrics: {metrics}")
 
     metrics = {}  # reset metrics object
 
@@ -370,12 +371,12 @@ if __name__ == "__main__":
     args = Struct(**pull_host_args())
 
     schedule.every().minute.do(every_minute_job)
-    schedule.every(5).minutes.do(every_five_mins_job)
+    schedule.every(5).minutes.do(record_internet_metrics_job)
     schedule.every().hour.do(every_hour_job)
 
     every_minute_job()  # run all metrics once immediately
     every_hour_job()
-    every_five_mins_job()
+    record_internet_metrics_job()
 
     while args.daemon:
         schedule.run_pending()
