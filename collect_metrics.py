@@ -382,12 +382,12 @@ if __name__ == "__main__":
     args = Struct(**pull_host_args())
 
     schedule.every().minute.do(every_minute_job)
-    # schedule.every(5).minutes.do(record_internet_metrics_job)
+    schedule.every(10).minutes.do(record_internet_metrics_job)
     schedule.every().hour.do(every_hour_job)
 
     every_minute_job()  # run all metrics once immediately
     every_hour_job()
-    # record_internet_metrics_job()
+    record_internet_metrics_job()
 
     while args.daemon:
         schedule.run_pending()
