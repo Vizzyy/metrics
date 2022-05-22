@@ -106,6 +106,39 @@ def record_directory_size():
             print(f"Could not size for {directory} due to: {e}")
 
 
+def record_psu_stats():
+    import os
+    global metrics
+    try:
+        usage = os.popen(f'sudo /usr/sbin/pwrstat -status').read()
+        print(usage)
+
+        bits = usage.split('\n')
+
+        stats_map = {}
+
+        for line in bits[7:]:
+            if '..' not in line:
+                continue
+            else:
+                key, value = line.strip().split('. ')
+                key = key.replace('.', '')
+                if key == 'Test Result':
+                    test_result = value.split()
+                    stats_map['Test Result'] = test_result[0]
+                    stats_map['Test Result Datetime'] = f'{test_result[2]} {test_result[3]}'
+                else:
+                    stats_map[key] = value.split(' ')[0]
+
+        print(stats_map)
+
+        for metric in stats_map.keys():
+            metrics[f'psu_{metric}'] = stats_map[metric]
+
+    except Exception as e:
+        print(f"{type(e).__name__} - {e}")
+
+
 def record_cpu_temp(osx):
     global metrics
     try:
@@ -339,6 +372,7 @@ def every_minute_job():
     if args.climate: record_climate()
     if args.dir_size: record_directory_size()
     if args.soil_moisture: record_soil_moisture()
+    if args.psu_stats: record_psu_stats()
     if args.persist:
         sqs_send()
     else:
