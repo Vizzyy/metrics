@@ -130,10 +130,11 @@ def record_psu_stats():
                 else:
                     stats_map[key] = value.split(' ')[0]
 
-        print(stats_map)
-
-        for metric in stats_map.keys():
-            metrics[f'psu_{metric}'] = stats_map[metric]
+        metrics[f'ups_utility_voltage'] = stats_map["Utility Voltage"]
+        metrics[f'ups_output_voltage'] = stats_map["Output Voltage"]
+        metrics[f'ups_battery_percent'] = stats_map["Battery Capacity"]
+        metrics[f'ups_remaining_runtime'] = stats_map["Remaining Runtime"]
+        metrics[f'ups_load_wattage'] = stats_map["Load"]
 
     except Exception as e:
         print(f"{type(e).__name__} - {e}")
