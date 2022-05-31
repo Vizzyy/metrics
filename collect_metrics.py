@@ -318,7 +318,8 @@ def record_nest_data():
     for thermostat in nest_data:
         thermostat_name = thermostat['display_name']
         for trait in thermostat.keys():
-            metrics[f'nest_{thermostat_name}_{trait}'] = float(thermostat[trait])
+            if trait != 'display_name':
+                metrics[f'nest_{thermostat_name}_{trait}'] = float(thermostat[trait])
 
 
 def pull_host_args():
