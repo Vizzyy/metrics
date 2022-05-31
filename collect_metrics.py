@@ -6,6 +6,7 @@ from config import *
 import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
+from nest import get_nest_data
 from climate import get_climate_measurements
 import mysql.connector
 import schedule
@@ -312,6 +313,14 @@ def record_internet_metrics():
         print(f"[{type(e).__name__}] Could not gather internet metrics due to: {e}")
 
 
+def record_nest_data():
+    nest_data = get_nest_data()
+    for thermostat in nest_data:
+        thermostat_name = thermostat['display_name']
+        for trait in thermostat.keys():
+            metrics[f'nest_{thermostat_name}_{trait}'] = float(thermostat[trait])
+
+
 def pull_host_args():
     global db, cursor
     remote_args = None
@@ -374,6 +383,7 @@ def every_minute_job():
     if args.dir_size: record_directory_size()
     if args.soil_moisture: record_soil_moisture()
     if args.psu_stats: record_psu_stats()
+    if args.nest_data: record_nest_data()
     if args.persist:
         sqs_send()
     else:
