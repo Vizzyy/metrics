@@ -12,11 +12,14 @@ def convert_to_f(c):
 
 def get_access_token():
     global access_token
+
+    print(f'Getting new nest access token...')
     # Get new oauth token using existing refresh token
     r = requests.post('https://www.googleapis.com/oauth2/v4/token', params=nest_refresh_token_query_params)
     response_body = r.json()
     if 'access_token' in response_body:
         access_token = response_body['access_token']
+        print(f'New token: {access_token}')
     else:
         raise(Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
 
@@ -37,7 +40,7 @@ def get_nest_data():
         r = requests.get(f'https://smartdevicemanagement.googleapis.com/v1/enterprises/{nest_device_project_id}/devices',
                          headers=headers)
         response_body = r.json()
-
+        print(f'Devices response: {response_body}')
         try:
             devices = response_body['devices']
         except Exception as ex:
