@@ -31,6 +31,7 @@ def get_nest_data():
         if not access_token:
             access_token = get_access_token()
 
+        print(f'get_nest_data: {access_token}')
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {access_token}'
