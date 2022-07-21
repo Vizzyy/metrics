@@ -11,17 +11,17 @@ def convert_to_f(c):
 
 
 def get_access_token():
-    global access_token
-
     print(f'Getting new nest access token...')
     # Get new oauth token using existing refresh token
     r = requests.post('https://www.googleapis.com/oauth2/v4/token', params=nest_refresh_token_query_params)
     response_body = r.json()
     if 'access_token' in response_body:
-        access_token = response_body['access_token']
-        print(f'New token: {access_token}')
+        token = response_body['access_token']
+        print(f'New token: {token}')
     else:
         raise(Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
+
+    return token
 
 
 def get_nest_data():
@@ -31,7 +31,7 @@ def get_nest_data():
         if not access_token:
             access_token = get_access_token()
 
-        print(f'get_nest_data: {access_token}')
+        # print(f'get_nest_data: {access_token}')
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {access_token}'
