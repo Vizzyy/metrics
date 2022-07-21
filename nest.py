@@ -37,7 +37,14 @@ def get_nest_data():
         r = requests.get(f'https://smartdevicemanagement.googleapis.com/v1/enterprises/{nest_device_project_id}/devices',
                          headers=headers)
         response_body = r.json()
-        devices = response_body['devices']
+
+        try:
+            devices = response_body['devices']
+        except Exception as ex:
+            # TODO: improve check if token expired, and use refresh to get another
+            print(f'INNER EXCEPTION - {type(ex).__name__} - {ex}')
+            access_token = get_access_token()
+            raise ex
 
         for device in devices:
             # print(json.dumps(device, indent=4, sort_keys=True))
