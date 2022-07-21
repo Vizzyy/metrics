@@ -17,7 +17,7 @@ def get_access_token():
     response_body = r.json()
     if 'access_token' in response_body:
         token = response_body['access_token']
-        print(f'New token: {token}')
+        # print(f'New token: {token}')
     else:
         raise(Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
 
@@ -41,7 +41,7 @@ def get_nest_data():
         r = requests.get(f'https://smartdevicemanagement.googleapis.com/v1/enterprises/{nest_device_project_id}/devices',
                          headers=headers)
         response_body = r.json()
-        print(f'Devices response: {response_body}')
+        # print(f'Devices response: {response_body}')
         try:
             devices = response_body['devices']
         except Exception as ex:
