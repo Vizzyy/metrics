@@ -3,21 +3,30 @@ import requests
 from config import nest_refresh_token_query_params, nest_device_project_id
 
 
+access_token = None
+
+
 def convert_to_f(c):
     return c * (9/5) + 32
 
 
+def get_access_token():
+    global access_token
+    # Get new oauth token using existing refresh token
+    r = requests.post('https://www.googleapis.com/oauth2/v4/token', params=nest_refresh_token_query_params)
+    response_body = r.json()
+    if 'access_token' in response_body:
+        access_token = response_body['access_token']
+    else:
+        raise(Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
+
+
 def get_nest_data():
+    global access_token
     nest_data = []
     try:
-        # Get new oauth token using existing refresh token
-        r = requests.post('https://www.googleapis.com/oauth2/v4/token', params=nest_refresh_token_query_params)
-        response_body = r.json()
-        if 'access_token' in response_body:
-            access_token = response_body['access_token']
-        else:
-            print(f'response_body: {response_body}')
-            raise(Exception('No Access Token available in oauth response.'))
+        if not access_token:
+            access_token = get_access_token()
 
         headers = {
             'Content-Type': 'application/json',
