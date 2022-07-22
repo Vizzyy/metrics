@@ -44,7 +44,7 @@ def get_nest_data():
         try:
             devices = response_body['devices']
         except Exception as ex:
-            # TODO: improve check if token expired, and use refresh to get another. Token appears to expire after 1hr
+            # TODO: Check response to confirm token expiration message. Token appears to expire after 1hr
             print(f'Device Data was not returned - {type(ex).__name__} - {ex} - response_body: {response_body}')
             access_token = get_access_token()
             raise ex
