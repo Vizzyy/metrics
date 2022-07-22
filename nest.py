@@ -1,13 +1,11 @@
 import requests
-# import json
 from config import nest_refresh_token_query_params, nest_device_project_id
-
 
 access_token = None
 
 
 def convert_to_f(c):
-    return c * (9/5) + 32
+    return c * (9 / 5) + 32
 
 
 def get_access_token():
@@ -19,7 +17,7 @@ def get_access_token():
         token = response_body['access_token']
         # print(f'New token: {token}')
     else:
-        raise(Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
+        raise (Exception(f'NEST - No Access Token available in oauth response. Response body: {response_body}'))
 
     return token
 
@@ -38,15 +36,16 @@ def get_nest_data():
         }
 
         # Get device(s)
-        r = requests.get(f'https://smartdevicemanagement.googleapis.com/v1/enterprises/{nest_device_project_id}/devices',
-                         headers=headers)
+        r = requests.get(
+            f'https://smartdevicemanagement.googleapis.com/v1/enterprises/{nest_device_project_id}/devices',
+            headers=headers)
         response_body = r.json()
         # print(f'Devices response: {response_body}')
         try:
             devices = response_body['devices']
         except Exception as ex:
-            # TODO: improve check if token expired, and use refresh to get another
-            print(f'INNER EXCEPTION - {type(ex).__name__} - {ex}')
+            # TODO: improve check if token expired, and use refresh to get another. Token appears to expire after 1hr
+            print(f'Device Data was not returned - {type(ex).__name__} - {ex} - response_body: {response_body}')
             access_token = get_access_token()
             raise ex
 
@@ -57,21 +56,26 @@ def get_nest_data():
                 'display_name': device['parentRelations'][0]['displayName'],
                 'fan_on': 0 if device['traits']['sdm.devices.traits.Fan']['timerMode'] == 'OFF' else 1,
                 'humidity': device['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent'],
-                'temperature_ambient_c': device['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'],
+                'temperature_ambient_c': device['traits']['sdm.devices.traits.Temperature'][
+                    'ambientTemperatureCelsius'],
                 'temperature_ambient_f': convert_to_f(
                     device['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius']
                 ),
                 'mode_heat': 1 if device['traits']['sdm.devices.traits.ThermostatMode']['mode'] == 'HEAT' else 0,
                 'mode_cool': 1 if device['traits']['sdm.devices.traits.ThermostatMode']['mode'] == 'COOL' else 0,
-                'mode_heatcool': 1 if device['traits']['sdm.devices.traits.ThermostatMode']['mode'] == 'HEATCOOL' else 0,
+                'mode_heatcool': 1 if device['traits']['sdm.devices.traits.ThermostatMode'][
+                                          'mode'] == 'HEATCOOL' else 0,
                 'mode_off': 1 if device['traits']['sdm.devices.traits.ThermostatMode']['mode'] == 'OFF' else 0,
-                'hvac_cooling': 1 if device['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'COOLING' else 0,
-                'hvac_heating': 1 if device['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'HEATING' else 0,
+                'hvac_cooling': 1 if device['traits']['sdm.devices.traits.ThermostatHvac'][
+                                         'status'] == 'COOLING' else 0,
+                'hvac_heating': 1 if device['traits']['sdm.devices.traits.ThermostatHvac'][
+                                         'status'] == 'HEATING' else 0,
                 'hvac_off': 1 if device['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'OFF' else 0,
             }
 
             for set_point in device['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint'].keys():
-                traits['temperature_set_point_c'] = device['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint'][set_point]
+                traits['temperature_set_point_c'] = \
+                    device['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint'][set_point]
                 traits['temperature_set_point_f'] = convert_to_f(
                     device['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint'][set_point]
                 )
