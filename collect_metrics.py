@@ -7,6 +7,7 @@ import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
 from nest import get_nest_data
+from midea import get_midea_data
 from climate import get_climate_measurements
 import mysql.connector
 import schedule
@@ -322,6 +323,12 @@ def record_nest_data():
                 metrics[f'nest_{thermostat_name}_{trait}'] = float(thermostat[trait])
 
 
+def record_midea_data():
+    midea_data = get_midea_data()
+    for trait in midea_data.keys():
+        metrics[f'midea_{trait}'] = float(midea_data[trait])
+
+
 def pull_host_args():
     global db, cursor
     remote_args = None
@@ -385,6 +392,7 @@ def every_minute_job():
     if args.soil_moisture: record_soil_moisture()
     if args.psu_stats: record_psu_stats()
     if args.nest_data: record_nest_data()
+    if args.midea_data: record_midea_data()
     if args.persist:
         sqs_send()
     else:

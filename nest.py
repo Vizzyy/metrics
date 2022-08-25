@@ -45,6 +45,9 @@ def get_nest_data():
             devices = response_body['devices']
         except Exception as ex:
             # TODO: Check response to confirm token expiration message. Token appears to expire after 1hr
+            #  response_body: {'error': {'code': 401, 'message': 'Request had invalid authentication credentials.
+            #  Expected OAuth 2 access token, login cookie or other valid authentication credential. See
+            #  https://developers.google.com/identity/sign-in/web/devconsole-project.', 'status': 'UNAUTHENTICATED'}}
             print(f'Device Data was not returned - {type(ex).__name__} - {ex} - response_body: {response_body}')
             access_token = get_access_token()
             raise ex
