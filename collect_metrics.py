@@ -6,8 +6,6 @@ from config import *
 import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
-from nest import get_nest_data
-from midea import get_midea_data
 from climate import get_climate_measurements
 import mysql.connector
 import schedule
@@ -315,6 +313,8 @@ def record_internet_metrics():
 
 
 def record_nest_data():
+    from nest import get_nest_data
+
     nest_data = get_nest_data()
     for thermostat in nest_data:
         thermostat_name = thermostat['display_name']
@@ -324,6 +324,8 @@ def record_nest_data():
 
 
 def record_midea_data():
+    from midea import get_midea_data
+
     midea_data = get_midea_data()
     for trait in midea_data.keys():
         metrics[f'midea_{trait}'] = float(midea_data[trait])
