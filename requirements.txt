@@ -3,3 +3,4 @@ boto3
 ec2_metadata
 schedule
 psutil
+Adafruit_DHT
