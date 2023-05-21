@@ -10,6 +10,8 @@ from climate import get_climate_measurements
 import mysql.connector
 import schedule
 import boto3
+from nest import convert_to_f
+
 
 metrics = {}
 db = None
@@ -323,6 +325,21 @@ def record_nest_data():
                 metrics[f'nest_{thermostat_name}_{trait}'] = float(thermostat[trait])
 
 
+def record_nest_homebridge_data():
+    from nest_homebridge import get_sensor_state
+
+    downstairs = get_sensor_state(downstairs_nest_unique_id)
+    metrics[f'hb_downstairs_temp_f'] = float(convert_to_f(downstairs['CurrentTemperature']))
+    metrics[f'hb_downstairs_rel_humidity'] = float(downstairs['CurrentRelativeHumidity'])
+    
+    upstairs = get_sensor_state(upstairs_nest_unique_id)
+    metrics[f'hb_upstairs_temp_f'] = float(convert_to_f(upstairs['CurrentTemperature']))
+    metrics[f'hb_upstairs_rel_humidity'] = float(upstairs['CurrentRelativeHumidity'])
+
+    loft = get_sensor_state(loft_nest_unique_id)
+    metrics[f'hb_loft_temp_f'] = float(convert_to_f(loft['CurrentTemperature']))
+
+
 def record_midea_data():
     from midea import get_midea_data
 
@@ -393,7 +410,7 @@ def every_minute_job():
     if args.dir_size: record_directory_size()
     if args.soil_moisture: record_soil_moisture()
     if args.psu_stats: record_psu_stats()
-    if args.nest_data: record_nest_data()
+    if args.nest_data: record_nest_homebridge_data()
     if args.midea_data: record_midea_data()
     if args.persist:
         sqs_send()
