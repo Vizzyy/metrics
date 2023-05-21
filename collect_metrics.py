@@ -328,15 +328,15 @@ def record_nest_data():
 def record_nest_homebridge_data():
     from nest_homebridge import get_sensor_state
 
-    downstairs = get_sensor_state(downstairs_nest_unique_id)
+    downstairs = get_sensor_state(downstairs_nest_unique_id, 'downstairs_nest')
     metrics[f'hb_downstairs_temp_f'] = float(convert_to_f(downstairs['CurrentTemperature']))
     metrics[f'hb_downstairs_rel_humidity'] = float(downstairs['CurrentRelativeHumidity'])
     
-    upstairs = get_sensor_state(upstairs_nest_unique_id)
+    upstairs = get_sensor_state(upstairs_nest_unique_id, 'upstairs_nest')
     metrics[f'hb_upstairs_temp_f'] = float(convert_to_f(upstairs['CurrentTemperature']))
     metrics[f'hb_upstairs_rel_humidity'] = float(upstairs['CurrentRelativeHumidity'])
 
-    loft = get_sensor_state(loft_nest_unique_id)
+    loft = get_sensor_state(loft_nest_unique_id, 'loft_nest')
     metrics[f'hb_loft_temp_f'] = float(convert_to_f(loft['CurrentTemperature']))
 
 
