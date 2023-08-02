@@ -7,11 +7,14 @@ token = auth_response['access_token']
 
 
 def get_sensor_state(unique_id, name=None):
-  accessories_endpoint = f'{homebridge_accessories_endpoint}/{unique_id}'
-  accessories = json.loads(requests.get(accessories_endpoint, headers={'Authorization': f'Bearer {token}'}).text)
+  try:
+    accessories_endpoint = f'{homebridge_accessories_endpoint}/{unique_id}'
+    accessories = json.loads(requests.get(accessories_endpoint, headers={'Authorization': f'Bearer {token}'}).text)
 
-  sensor_state = accessories['values']
-  sensor_name = 'Sensor' if not name else name
-  print(f'{sensor_name} state: {json.dumps(sensor_state, indent=2)}')
-  return sensor_state
+    sensor_state = accessories['values']
+    sensor_name = 'Sensor' if not name else name
+    print(f'{sensor_name} state: {json.dumps(sensor_state, indent=2)}')
+    return sensor_state
+  except Exception as e:
+    print(f'HOMEBRIDGE NEST ERROR: {type(e).__name__} -- {e}')
 
