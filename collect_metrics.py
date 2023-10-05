@@ -345,9 +345,12 @@ def record_nest_homebridge_data():
 def record_midea_data():
     from midea import get_midea_data
 
-    midea_data = get_midea_data()
-    for trait in midea_data.keys():
-        metrics[f'midea_{trait}'] = float(midea_data[trait])
+    try: 
+        midea_data = get_midea_data()
+        for trait in midea_data.keys():
+            metrics[f'midea_{trait}'] = float(midea_data[trait])
+    except:
+        print('record_midea_data error')
 
 
 def pull_host_args():
