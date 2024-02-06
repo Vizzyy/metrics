@@ -342,6 +342,15 @@ def record_nest_homebridge_data():
         print('record_nest_homebridge_data error')
 
 
+def record_flume_water_data():
+    from flume import get_current_monthly_usage
+    try: 
+        flume_monthly_usage_gallons = get_current_monthly_usage()
+        metrics[f'flume_monthly_usage_gallons'] = float(flume_monthly_usage_gallons)
+    except:
+        print('record_flume_water_data error')
+
+
 def record_midea_data():
     from midea import get_midea_data
 
@@ -417,6 +426,7 @@ def every_minute_job():
     if args.psu_stats: record_psu_stats()
     if args.nest_data: record_nest_homebridge_data()
     if args.midea_data: record_midea_data()
+    if args.flume_data: record_flume_water_data()
     if args.persist:
         sqs_send()
     else:
