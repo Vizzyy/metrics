@@ -120,5 +120,5 @@ if not read_from_tokens_file() or not check_token_valid():
     
 
 
-print(get_current_monthly_usage())
+# print(get_current_monthly_usage())
 
