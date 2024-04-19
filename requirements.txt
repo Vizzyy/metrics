@@ -4,3 +4,4 @@ ec2_metadata
 schedule
 psutil
 adafruit-circuitpython-dht
+RPi.GPIO
