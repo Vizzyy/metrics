@@ -169,10 +169,11 @@ def record_uptime():
 def record_climate():
     global metrics
     climate_readings = get_climate_measurements()
-    metrics["climate_humid"] = climate_readings[0]
-    metrics["climate_temp_c"] = climate_readings[1]
-    fahrenheit = (climate_readings[1] * 9 / 5) + 32
-    metrics["climate_temp_f"] = fahrenheit
+    if climate_readings != None:
+        metrics["climate_humid"] = climate_readings[0]
+        metrics["climate_temp_c"] = climate_readings[1]
+        fahrenheit = (climate_readings[1] * 9 / 5) + 32
+        metrics["climate_temp_f"] = fahrenheit
 
 
 def record_aws_cost():
