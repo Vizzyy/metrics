@@ -293,7 +293,7 @@ def record_internet_metrics():
     from subprocess import STDOUT, check_output
 
     try:
-        usage = check_output('speedtest -s 1775 -f json'.split(' '), stderr=STDOUT, timeout=180).decode("utf-8")
+        usage = check_output(f'speedtest -s {SPEED_TEST_SERVER} -f json'.split(' '), stderr=STDOUT, timeout=180).decode("utf-8")
         api_result = None
         for block in usage.splitlines():
             try:
