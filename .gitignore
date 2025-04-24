@@ -4,3 +4,4 @@ config.py*
 .DS_Store
 vizzyy.ddns.net_full_ca.crt
 metrics.log
+venv/

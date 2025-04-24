@@ -7,15 +7,12 @@ import datetime
 import time
 from ec2_metrics import get_ec2_cpu, get_ec2_mem, get_aws_cost, get_queue_depth
 from climate import get_climate_measurements
-import mysql.connector
 import schedule
 import boto3
 from nest import convert_to_f
 
 
 metrics = {}
-db = None
-cursor = None
 args = None
 sqs = boto3.client('sqs')
 
@@ -364,21 +361,8 @@ def record_midea_data():
 
 
 def pull_host_args():
-    global db, cursor
-    remote_args = None
-
-    try:
-        db.ping(True)
-        cursor = db.cursor(dictionary=True)
-        sql = "select * from graphing_data.metric_host_args where host = %s"
-        cursor.execute(sql, (HOSTNAME,))
-        remote_args = cursor.fetchall()[0]
-        cursor.close()
-        print(f"Pulled host args: {remote_args}")
-    except Exception as e:
-        print(f"Error pulling host args: {e}")
-
-    return remote_args
+    print(json.dumps(COLLECTION_ARGS))
+    return COLLECTION_ARGS
 
 
 def sqs_send():

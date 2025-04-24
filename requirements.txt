@@ -1,7 +1,7 @@
-mysql-connector-python
+# mysql-connector-python
 boto3
 ec2_metadata
 schedule
 psutil
 adafruit-circuitpython-dht
-RPi.GPIO
+#RPi.GPIO
