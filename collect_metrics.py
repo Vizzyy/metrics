@@ -52,10 +52,10 @@ def record_network_sent(exclude_lo):
         metrics["network_sent"] = psutil.net_io_counters().bytes_sent / 1024 / 1024
 
 
-def record_network_sent_avg():
-    global metrics
-    five_min_avg = get_network_avg("network_sent")
-    metrics["network_sent_avg"] = five_min_avg
+# def record_network_sent_avg():
+#     global metrics
+#     five_min_avg = get_network_avg("network_sent")
+#     metrics["network_sent_avg"] = five_min_avg
 
 
 def record_network_recv(exclude_lo):
@@ -71,10 +71,10 @@ def record_network_recv(exclude_lo):
         metrics["network_recv"] = psutil.net_io_counters().bytes_recv / 1024 / 1024
 
 
-def record_network_recv_avg():
-    global metrics
-    five_min_avg = get_network_avg("network_recv")
-    metrics["network_recv_avg"] = five_min_avg
+# def record_network_recv_avg():
+#     global metrics
+#     five_min_avg = get_network_avg("network_recv")
+#     metrics["network_recv_avg"] = five_min_avg
 
 
 def record_mem_util(ec2):
@@ -183,52 +183,41 @@ def record_queue_depth():
     metrics["queue_depth"] = get_queue_depth(queue_name)
 
 
-def initialize_db_conn():
-    global db, cursor
-    try:
-        db = mysql.connector.connect(**SSL_CONFIG)
-        print("Connected to DB!")
-        return True
-    except Exception as e:
-        print(f"Error connecting to DB: {e}")
-        return False
+# def get_network_avg(metric):
+#     result = 0
+#     results = 0.0
+#     now = datetime.datetime.now()
+#     five_minutes = datetime.timedelta(minutes=5)
+#     five_minutes_ago = now - five_minutes
+#     try:
+#         db.ping(True)
+#         cursor = db.cursor(dictionary=True)
+#         sql = f"select * from graphing_data.server_metrics " \
+#               f"where hostname = %s " \
+#               f"and metric = %s " \
+#               f"and timestamp >= %s " \
+#               f"ORDER BY timestamp DESC"
+#         cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
+#         query_results = cursor.fetchall()
+#         cursor.close()
+#         for i in range(0, len(query_results)):
+#             try:
+#                 temp = float(query_results[i]['value'] - query_results[i+1]['value'])
+#                 results += temp
+#             except IndexError:
+#                 break
 
+#         avg = results / float(len(query_results))
 
-def get_network_avg(metric):
-    result = 0
-    results = 0.0
-    now = datetime.datetime.now()
-    five_minutes = datetime.timedelta(minutes=5)
-    five_minutes_ago = now - five_minutes
-    try:
-        db.ping(True)
-        cursor = db.cursor(dictionary=True)
-        sql = f"select * from graphing_data.server_metrics " \
-              f"where hostname = %s " \
-              f"and metric = %s " \
-              f"and timestamp >= %s " \
-              f"ORDER BY timestamp DESC"
-        cursor.execute(sql, (HOSTNAME, metric, five_minutes_ago))
-        query_results = cursor.fetchall()
-        cursor.close()
-        for i in range(0, len(query_results)):
-            try:
-                temp = float(query_results[i]['value'] - query_results[i+1]['value'])
-                results += temp
-            except IndexError:
-                break
+#         if avg < 0:
+#             avg = 0
 
-        avg = results / float(len(query_results))
-
-        if avg < 0:
-            avg = 0
-
-        result = avg
-    except ZeroDivisionError:
-        pass
-    except Exception as e:
-        print(f"Network Avg error: {e}")
-    return result
+#         result = avg
+#     except ZeroDivisionError:
+#         pass
+#     except Exception as e:
+#         print(f"Network Avg error: {e}")
+#     return result
 
 
 def record_cert_expiry():
@@ -402,8 +391,8 @@ def every_minute_job():
     if args.cpu_temp: record_cpu_temp(args.osx)
     if args.network_sent: record_network_sent(args.exclude_lo)
     if args.network_recv: record_network_recv(args.exclude_lo)
-    if args.network_sent_avg: record_network_sent_avg()
-    if args.network_recv_avg: record_network_recv_avg()
+    # if args.network_sent_avg: record_network_sent_avg()
+    # if args.network_recv_avg: record_network_recv_avg()
     if args.queue_depth: record_queue_depth()
     if args.climate: record_climate()
     if args.dir_size: record_directory_size()
@@ -448,10 +437,6 @@ def every_hour_job():
 
 
 if __name__ == "__main__":
-
-    if not db:
-        initialize_db_conn()
-
     args = Struct(**pull_host_args())
 
     schedule.every().minute.do(every_minute_job)
