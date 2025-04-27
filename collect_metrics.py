@@ -354,7 +354,10 @@ def record_ha_climate_data():
     try: 
         ha_climate_data = get_ha_climate_data()
         for trait in ha_climate_data.keys():
-            metrics[f'ha_climate_{trait}'] = float(ha_climate_data[trait])
+            try:
+                metrics[f'ha_climate_{trait}'] = float(ha_climate_data[trait])
+            except Exception as inner_ex:
+                print(f'({trait} = {ha_climate_data[trait]}) ha climate data parse error: {type(inner_ex).__name__} - {inner_ex}')
     except Exception as e:
         print(f'record_ha_climate_data error: {type(e).__name__} - {e}')
 
