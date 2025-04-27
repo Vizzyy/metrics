@@ -5,3 +5,4 @@ schedule
 psutil
 adafruit-circuitpython-dht
 #RPi.GPIO
+HomeAssistant-API

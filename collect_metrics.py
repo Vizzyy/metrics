@@ -348,6 +348,16 @@ def record_midea_data():
     except:
         print('record_midea_data error')
 
+    
+def record_ha_climate_data():
+    from home_assistant import get_ha_climate_data
+    try: 
+        ha_climate_data = get_ha_climate_data()
+        for trait in ha_climate_data.keys():
+            metrics[f'ha_climate_{trait}'] = float(ha_climate_data[trait])
+    except Exception as e:
+        print(f'record_ha_climate_data error: {type(e).__name__} - {e}')
+
 
 def pull_host_args():
     print(json.dumps(COLLECTION_ARGS))
@@ -401,6 +411,7 @@ def every_minute_job():
     if args.nest_data: record_nest_homebridge_data()
     if args.midea_data: record_midea_data()
     if args.flume_data: record_flume_water_data()
+    if args.ha_climate_data: record_ha_climate_data()
     if args.persist:
         sqs_send()
     else:
