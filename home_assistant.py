@@ -16,17 +16,20 @@ def get_ha_climate_data():
         master_temp = client.get_state(entity_id='sensor.master_temp_temperature')
         master_hum = client.get_state(entity_id='sensor.master_temp_humidity')
         laundry_temp = client.get_state(entity_id='sensor.titan_water_valve_actuator_air_temperature')
-
+        office_temp = client.get_state(entity_id='sensor.office_temp_temperature')
+        office_hum = client.get_state(entity_id='sensor.office_temp_humidity')
         return {
             'temp_loft': loft_temp.state,
             'temp_living_room': living_room_temp.state,
             'temp_guest': guest_temp.state,
             'temp_master': master_temp.state,
             'temp_laundry': laundry_temp.state,
+            'temp_office': office_temp.state,
             'hum_loft': loft_hum.state,
             'hum_guest': guest_hum.state,
             'hum_living_room': living_room_hum.state,
             'hum_master': master_hum.state,
+            'hum_office': office_hum.state,
         }
 
 
