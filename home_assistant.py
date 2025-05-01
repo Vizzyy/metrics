@@ -7,30 +7,38 @@ def get_ha_climate_data():
         HA_SERVER_URL,
         HA_ACCESS_TOKEN
     ) as client:
-        loft_temp = client.get_state(entity_id='sensor.loft_temp_temperature')
-        loft_hum = client.get_state(entity_id='sensor.loft_temp_humidity')
-        guest_temp = client.get_state(entity_id='sensor.guest_temp_temperature')
-        guest_hum = client.get_state(entity_id='sensor.guest_temp_humidity')
-        living_room_temp = client.get_state(entity_id='sensor.living_room_temp_temperature')
-        living_room_hum = client.get_state(entity_id='sensor.living_room_temp_humidity')
-        master_temp = client.get_state(entity_id='sensor.master_temp_temperature')
-        master_hum = client.get_state(entity_id='sensor.master_temp_humidity')
-        laundry_temp = client.get_state(entity_id='sensor.titan_water_valve_actuator_air_temperature')
-        office_temp = client.get_state(entity_id='sensor.office_temp_temperature')
-        office_hum = client.get_state(entity_id='sensor.office_temp_humidity')
+        temp_loft = client.get_state(entity_id='sensor.loft_temp_temperature')
+        hum_loft = client.get_state(entity_id='sensor.loft_temp_humidity')
+        temp_guest = client.get_state(entity_id='sensor.guest_temp_temperature')
+        hum_guest = client.get_state(entity_id='sensor.guest_temp_humidity')
+        temp_living_room = client.get_state(entity_id='sensor.living_room_temp_temperature')
+        temp_lr_nest = client.get_state(entity_id='sensor.downstairs_thermostat_current_temperature')
+        hum_lr_nest = client.get_state(entity_id='sensor.downstairs_thermostat_current_humidity')
+        hum_living_room = client.get_state(entity_id='sensor.living_room_temp_humidity')
+        temp_master = client.get_state(entity_id='sensor.master_temp_temperature')
+        hum_master = client.get_state(entity_id='sensor.master_temp_humidity')
+        temp_laundry = client.get_state(entity_id='sensor.titan_water_valve_actuator_air_temperature')
+        temp_office = client.get_state(entity_id='sensor.office_temp_temperature')
+        hum_office = client.get_state(entity_id='sensor.office_temp_humidity')
+        temp_loft_nest = client.get_state(entity_id='sensor.loft_temperature')
+        temp_master_nest = client.get_state(entity_id='sensor.master_bedroom_temperature')
         return {
-            'temp_loft': loft_temp.state,
-            'temp_living_room': living_room_temp.state,
-            'temp_guest': guest_temp.state,
-            'temp_master': master_temp.state,
-            'temp_laundry': laundry_temp.state,
-            'temp_office': office_temp.state,
-            'hum_loft': loft_hum.state,
-            'hum_guest': guest_hum.state,
-            'hum_living_room': living_room_hum.state,
-            'hum_master': master_hum.state,
-            'hum_office': office_hum.state,
+            'temp_loft': temp_loft.state,
+            'temp_living_room': temp_living_room.state,
+            'temp_guest': temp_guest.state,
+            'temp_master': temp_master.state,
+            'temp_laundry': temp_laundry.state,
+            'temp_office': temp_office.state,
+            'temp_loft_nest': temp_loft_nest.state,
+            'temp_master_nest': temp_master_nest.state,
+            'temp_lr_nest': temp_lr_nest.state,
+            'hum_loft': hum_loft.state,
+            'hum_guest': hum_guest.state,
+            'hum_living_room': hum_living_room.state,
+            'hum_master': hum_master.state,
+            'hum_office': hum_office.state,
+            'hum_lr_nest': hum_lr_nest.state,
         }
 
 
-# print(get_ha_climate_data())
+print(get_ha_climate_data())
