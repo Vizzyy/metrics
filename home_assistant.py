@@ -41,4 +41,4 @@ def get_ha_climate_data():
         }
 
 
-print(get_ha_climate_data())
+# print(get_ha_climate_data())
