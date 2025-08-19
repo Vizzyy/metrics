@@ -22,6 +22,9 @@ def get_ha_climate_data():
         hum_office = client.get_state(entity_id='sensor.office_temp_humidity')
         temp_loft_nest = client.get_state(entity_id='sensor.loft_temperature')
         temp_master_nest = client.get_state(entity_id='sensor.master_bedroom_temperature')
+        water_usage_daily = client.get_state(entity_id='sensor.water_usage_daily')
+        water_usage_weekly = client.get_state(entity_id='sensor.water_usage_weekly')
+        water_usage_monthly = client.get_state(entity_id='sensor.water_usage_monthly')
         return {
             'temp_loft': temp_loft.state,
             'temp_living_room': temp_living_room.state,
@@ -38,7 +41,10 @@ def get_ha_climate_data():
             'hum_master': hum_master.state,
             'hum_office': hum_office.state,
             'hum_lr_nest': hum_lr_nest.state,
+            'water_usage_daily': water_usage_daily.state if water_usage_daily.state != 'unknown' else 0,
+            'water_usage_weekly': water_usage_weekly.state if water_usage_weekly.state != 'unknown' else 0,
+            'water_usage_monthly': water_usage_monthly.state if water_usage_monthly.state != 'unknown' else 0,
         }
 
 
-# print(get_ha_climate_data())
+print(get_ha_climate_data())
