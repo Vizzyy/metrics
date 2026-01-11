@@ -144,7 +144,7 @@ def record_cpu_temp(osx):
     try:
         if not osx:
             # Should work on any non-Mac linux box
-            cpu_temp = psutil.sensors_temperatures()[list(psutil.sensors_temperatures())[0]][0][1]
+            cpu_temp = psutil.sensors_temperatures()[list(psutil.sensors_temperatures())[COLLECTION_ARGS['cpu_temp_index']]][0][1]
             metrics["cpu_temp"] = cpu_temp
         else:
             import os
@@ -364,6 +364,10 @@ def record_ha_climate_data():
 
 def pull_host_args():
     print(json.dumps(COLLECTION_ARGS))
+    if 'cpu_temp_index' not in COLLECTION_ARGS:
+        # machines with nvme drives may have CPU on a different sensor index
+        # otherwise 0 is usually correct
+        COLLECTION_ARGS['cpu_temp_index'] = 0 
     return COLLECTION_ARGS
 
 
