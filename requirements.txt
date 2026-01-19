@@ -6,3 +6,4 @@ psutil
 adafruit-circuitpython-dht
 #RPi.GPIO
 HomeAssistant-API
+ph4-nut2

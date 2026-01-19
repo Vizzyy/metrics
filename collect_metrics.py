@@ -106,35 +106,49 @@ def record_directory_size():
 
 
 def record_psu_stats():
-    import os
     global metrics
     try:
-        usage = os.popen(f'sudo /usr/sbin/pwrstat -status').read()
-        print(usage)
+        from nut2 import PyNUTClient
 
-        bits = usage.split('\n')
+        nut = PyNUTClient(host="nasty.local", port=3493)
+        ups_vars = nut.list_vars("ups0")
+        print(ups_vars)
 
-        stats_map = {}
+        def to_float(value):
+            try:
+                return float(value)
+            except Exception:
+                return None
 
-        for line in bits[7:]:
-            if '..' not in line:
-                continue
-            else:
-                key, value = line.strip().split('. ')
-                key = key.replace('.', '')
-                if key == 'Test Result':
-                    test_result = value.split()
-                    stats_map['Test Result'] = test_result[0]
-                    stats_map['Test Result Datetime'] = f'{test_result[2]} {test_result[3]}'
-                else:
-                    stats_map[key] = value.split(' ')[0]
+        utility_voltage = to_float(ups_vars.get("input.voltage"))
+        output_voltage = to_float(ups_vars.get("output.voltage"))
+        battery_percent = to_float(ups_vars.get("battery.charge"))
+        runtime_seconds = to_float(ups_vars.get("battery.runtime"))
 
-        metrics[f'ups_utility_voltage'] = stats_map["Utility Voltage"]
-        metrics[f'ups_output_voltage'] = stats_map["Output Voltage"]
-        metrics[f'ups_battery_percent'] = stats_map["Battery Capacity"]
-        metrics[f'ups_remaining_runtime'] = stats_map["Remaining Runtime"]
-        metrics[f'ups_load_wattage'] = stats_map["Load"]
+        if utility_voltage is not None:
+            metrics["ups_utility_voltage"] = utility_voltage
+        if output_voltage is not None:
+            metrics["ups_output_voltage"] = output_voltage
+        if battery_percent is not None:
+            metrics["ups_battery_percent"] = battery_percent
+        if runtime_seconds is not None:
+            metrics["ups_remaining_runtime"] = runtime_seconds / 60.0
 
+        real_power = to_float(ups_vars.get("ups.realpower"))
+        output_power = to_float(ups_vars.get("output.power"))
+        load_percent = to_float(ups_vars.get("ups.load"))
+        nominal_power = to_float(ups_vars.get("ups.realpower.nominal"))
+
+        load_watts = real_power
+        if load_watts is None:
+            load_watts = output_power
+        if load_watts is None and load_percent is not None and nominal_power is not None:
+            load_watts = (load_percent / 100.0) * nominal_power
+        if load_watts is None and load_percent is not None:
+            load_watts = load_percent
+
+        if load_watts is not None:
+            metrics["ups_load_wattage"] = load_watts
     except Exception as e:
         print(f"{type(e).__name__} - {e}")
 
